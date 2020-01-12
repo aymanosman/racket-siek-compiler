@@ -17,3 +17,6 @@ jobs:
       - run: raco pkg install --name siek-interpreter-lib --link --auto --batch siek-interpreter-lib/
       - run: raco pkg install --name siek-interpreter-test --link --auto --batch siek-interpreter-test/
       - run: raco test -c tests/siek-interpreter
+      - run: raco pkg install --name siek-compiler-lib --link --auto --batch siek-compiler-lib/
+      - run: raco pkg install --name siek-compiler-test --link --auto --batch siek-compiler-test/
+      - run: raco test -c tests/siek-compiler
