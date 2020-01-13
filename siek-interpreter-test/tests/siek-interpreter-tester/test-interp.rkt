@@ -2,8 +2,6 @@
 
 (provide test-interp*)
 
-(require "with-input.rkt")
-
 (require rackunit)
 
 (define-syntax (test-interp* stx)
@@ -21,3 +19,7 @@
           (check-equal? (interp-L `(program () ,'exp))
             exp)
           (test-interp* interp-L clause* ...))]))
+
+(define-syntax-rule (with-input input body ...)
+  (parameterize ([current-input-port (open-input-string input)])
+    body ...))

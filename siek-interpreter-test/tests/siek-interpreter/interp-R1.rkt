@@ -1,6 +1,8 @@
 #lang racket
 
-(require rackunit)
+(require rackunit
+         tests/siek-interpreter-tester/test-interp)
+
 (require siek-interpreter/interp-R1)
 
 (check-equal? (interp-R1 `(program () 42))
@@ -22,9 +24,6 @@
                                 (let ([y (read)])
                                   (+ x (- y)))))))
               42)
-
-
-(require "private/test-interp.rkt")
 
 (test-interp* interp-R1
   ;; 1)

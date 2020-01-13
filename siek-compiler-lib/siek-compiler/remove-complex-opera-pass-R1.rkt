@@ -2,7 +2,7 @@
 
 (provide remove-complex-opera*-R1)
 
-(require "gensym.rkt")
+(require siek-compiler-gensym)
 
 (define (remove-complex-opera*-R1 p)
   (match p
@@ -29,7 +29,6 @@
     [_
      ((current-R1-mismatch-handler) 'exp e)]))
 
-;; (: rco-arg (R1 -> Arg {Var => R1-normal}))
 (define (rco-arg e)
   (match e
     [(? fixnum?)

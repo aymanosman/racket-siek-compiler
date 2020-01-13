@@ -2,7 +2,7 @@
 
 (provide uniquify-pass-R1)
 
-(require "gensym.rkt")
+(require siek-compiler-gensym)
 
 (define (uniquify-pass-R1 p)
   (match p

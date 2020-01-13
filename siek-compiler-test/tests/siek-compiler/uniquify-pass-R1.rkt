@@ -3,7 +3,7 @@
 (require rackunit)
 
 (require siek-compiler/uniquify-pass-R1
-         siek-compiler/gensym)
+         siek-compiler-gensym)
 
 (check-equal? (uniquify-pass-R1 `(program () 42))
               '(program () 42))

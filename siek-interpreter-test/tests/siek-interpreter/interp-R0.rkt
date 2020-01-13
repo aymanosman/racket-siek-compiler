@@ -1,6 +1,7 @@
 #lang racket
 
-(require rackunit)
+(require rackunit
+         tests/siek-interpreter-tester/test-interp)
 
 (require siek-interpreter/interp-R0)
 
@@ -21,8 +22,6 @@
   (thunk
     (parameterize ([current-input-port (open-input-string "foo")])
       (interp-R0 `(program () (+ (read) (+ 1 (- -1))))))))
-
-(require "private/test-interp.rkt")
 
 (test-interp* interp-R0
   2
