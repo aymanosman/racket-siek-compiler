@@ -15,8 +15,12 @@
                           remove-complex-opera*-R1
                           uniquify-pass-R1))
 
-(check-pass* compile (R1 -> x860)
+(check-pass* compile (R1 -> x860*)
   2
+
+  (- 10)
+
+  (- (+ 10 20))
 
   (let ([x 32])
     (+ x 10))

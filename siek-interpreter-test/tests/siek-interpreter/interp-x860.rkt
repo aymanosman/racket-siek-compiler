@@ -41,3 +41,11 @@
                              (addq (int 52) (deref rsp -8))
                              (movq (deref rsp -8) (reg rax)))))))
  42)
+
+
+(check-exn #rx"interp-x860: variables are not supported in the current language \\(did you mean to use pseudo-x86\\?\\)\n  current-x86: 'x860\n  variable: 'x"
+  (thunk
+    (interp-x860
+      '(program ()
+         ((start . (block ()
+                     (movq (int 10) (var x)))))))))

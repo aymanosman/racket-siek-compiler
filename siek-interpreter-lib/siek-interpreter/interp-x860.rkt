@@ -1,8 +1,15 @@
 #lang racket
 
-(provide interp-x860)
+(provide interp-x860
+         interp-x860*)
 
 (require racket/fixnum)
+
+(define current-x86 (make-parameter 'x860))
+
+(define (interp-x860* p)
+  (parameterize ([current-x86 'x860*])
+    (interp-x860 p)))
 
 (define (interp-x860 p)
   (match p
@@ -40,7 +47,6 @@
      (extend env (cons (l-value a1)
                        (r-value env a0)))]
     ;; ret
-    ;; negq
     [`(negq ,a)
      (extend env (cons (l-value a) (fx- 0 (r-value env a))))]
     ;; callq
@@ -69,6 +75,10 @@
                                       "arg" a)]
     [`(reg ,r) r]
     [`(deref ,reg ,m) m]
+    [`(var ,v)
+     (case (current-x86)
+       [(x860*) v]
+       [else (report-variables-not-supported-error v)])]
     [_
      (raise-arguments-error 'interp-x860 "failed match"
                             "kind" 'l-value
@@ -78,8 +88,17 @@
   (match a
     [`(int ,n) n]
     [`(reg ,r) (lookup env r)]
+    [`(var ,v)
+     (case (current-x86)
+       [(x860*) (lookup env v)]
+       [else (report-variables-not-supported-error v)])]
     [`(deref ,reg ,m) (lookup env m)]
     [_
      (raise-arguments-error 'interp-x860 "failed match"
                             "kind" 'r-value
                             "term" a)]))
+
+(define (report-variables-not-supported-error v)
+  (raise-arguments-error 'interp-x860 "variables are not supported in the current language (did you mean to use pseudo-x86?)"
+                         "current-x86" (current-x86)
+                         "variable" v))
