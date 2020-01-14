@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        racket-version: [ '7.3', '7.4', '7.5' ]
+        racket-version: [ '7.5' ]
     name: Racket ${{ matrix.racket-version }}
     steps:
       - uses: actions/checkout@master
