@@ -1,8 +1,8 @@
 #lang racket
 
-(require tests/siek-compiler-tester/check-pass
-         siek-interpreter/interp-R1
-         siek-compiler/uniquify-pass-R1
+(require tests/siek-compiler-tester/check-pass)
+
+(require siek-compiler/uniquify-pass-R1
          siek-compiler/remove-complex-opera-pass-R1)
 
 (define compile (compose1 remove-complex-opera*-R1

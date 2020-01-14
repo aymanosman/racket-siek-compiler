@@ -25,7 +25,11 @@
     [`(+ ,e0 ,e1) (fx+ (recur e0) (recur e1))]
     [(? symbol?) (lookup-R1 env e)]
     [`(let ([,x ,e0]) ,e1)
-     ((interp-R1-exp (extend-R1 env (cons x (recur e0)))) e1)]))
+     ((interp-R1-exp (extend-R1 env (cons x (recur e0)))) e1)]
+    [_
+     (raise-arguments-error 'interp-R1 "failed match"
+                            "kind" 'exp
+                            "term" e)]))
 
 (define (lookup-R1 env var)
   (match (assoc var env)
