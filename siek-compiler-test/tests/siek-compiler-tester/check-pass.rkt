@@ -7,12 +7,17 @@
          (for-syntax racket/syntax
                      syntax/parse))
 
+(require siek-interpreter/interp-R0
+         siek-interpreter/interp-R1
+         siek-interpreter/interp-C0
+         siek-interpreter/interp-x860)
+
 (define-syntax (check-pass stx)
   (syntax-parse stx
     #:literals (->)
     [(check-pass pass (L0:id -> L1:id) e)
-     (with-syntax ([interp-L0 (format-id #'L0 "interp-~a" (syntax-e #'L0))]
-                   [interp-L1 (format-id #'L1 "interp-~a" (syntax-e #'L1))])
+     (with-syntax ([interp-L0 (format-id #'here "interp-~a" (syntax-e #'L0))]
+                   [interp-L1 (format-id #'here "interp-~a" (syntax-e #'L1))])
        #'(check-pass-fun pass interp-L0 interp-L1 e))]))
 
 (define-syntax (check-pass* stx)
