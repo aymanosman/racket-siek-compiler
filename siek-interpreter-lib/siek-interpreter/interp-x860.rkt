@@ -17,18 +17,14 @@
                ((start . ,block)))
      (lookup (interp-block block) 'rax)]
     [_
-     (raise-arguments-error 'interp-x860 "failed match"
-                            "kind" 'top
-                            "term" p)]))
+     (report-mismatch-error 'top p)]))
 
 (define (interp-block b)
   (match b
     [`(block ,info ,instr* ...)
      (interp-instr* '() instr*)]
     [_
-     (raise-arguments-error 'interp-x860 "failed match"
-                            "kind" 'block
-                            "term" b)]))
+     (report-mismatch-error 'block b)]))
 
 (define (interp-instr* env i*)
   (cond
@@ -53,11 +49,14 @@
     ;; pushq
     ;; popq
     [_
-     (raise-arguments-error 'interp-x860 "failed match"
-                            "kind" 'instr
-                            "term" i)]))
+     (report-mismatch-error 'instr i)]))
 
 ;; Aux
+
+(define (report-mismatch-error kind term)
+  (raise-arguments-error 'interp-x860 "failed match"
+                         "kind" kind
+                         "term" term))
 
 (define (extend env entry)
   (cons entry env))
@@ -80,9 +79,7 @@
        [(x860*) v]
        [else (report-variables-not-supported-error v)])]
     [_
-     (raise-arguments-error 'interp-x860 "failed match"
-                            "kind" 'l-value
-                            "term" a)]))
+     (report-mismatch-error 'l-value a)]))
 
 (define (r-value env a)
   (match a
@@ -94,9 +91,7 @@
        [else (report-variables-not-supported-error v)])]
     [`(deref ,reg ,m) (lookup env m)]
     [_
-     (raise-arguments-error 'interp-x860 "failed match"
-                            "kind" 'r-value
-                            "term" a)]))
+     (report-mismatch-error 'r-value a)]))
 
 (define (report-variables-not-supported-error v)
   (raise-arguments-error 'interp-x860 "variables are not supported in the current language (did you mean to use pseudo-x86?)"
