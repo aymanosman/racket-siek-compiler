@@ -5,7 +5,7 @@
 (define (select-instructions-pass-R1 p)
   (match p
     [`(program ,info ((start . ,tail)))
-     `(program ()
+     `(program ,info
                ((start . (block () ,@(select-instructions-tail tail)))))]
     [_
      ((current-R1-mismatch-handler) 'top p)]))

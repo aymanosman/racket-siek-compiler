@@ -13,7 +13,7 @@
 
 (define (interp-x860 p)
   (match p
-    [`(program ()
+    [`(program ,info
                ((start . ,block)))
      (lookup (interp-block block) 'rax)]
     [_
