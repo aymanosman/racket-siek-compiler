@@ -1,7 +1,7 @@
 #lang racket
 
 (require rackunit)
-(require siek-interpreter/R1)
+(require siek-language/R1)
 
 (check-true (R1? '(program () 42)))
 (check-true (R1? '(program () (- 10))))
