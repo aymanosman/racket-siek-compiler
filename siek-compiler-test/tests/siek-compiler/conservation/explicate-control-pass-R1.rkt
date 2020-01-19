@@ -7,7 +7,7 @@
          siek-compiler/explicate-control-pass-R1)
 
 (define compile (compose1 explicate-control-pass-R1
-                          remove-complex-opera*-R1
+                          remove-complex-opera*-pass-R1
                           uniquify-pass-R1))
 
 (check-pass* compile (R1 -> C0)

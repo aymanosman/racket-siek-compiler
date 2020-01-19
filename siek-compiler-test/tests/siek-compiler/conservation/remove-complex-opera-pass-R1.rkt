@@ -5,7 +5,7 @@
 (require siek-compiler/uniquify-pass-R1
          siek-compiler/remove-complex-opera-pass-R1)
 
-(define compile (compose1 remove-complex-opera*-R1
+(define compile (compose1 remove-complex-opera*-pass-R1
                           uniquify-pass-R1))
 
 (check-pass* compile (R1 -> R1)

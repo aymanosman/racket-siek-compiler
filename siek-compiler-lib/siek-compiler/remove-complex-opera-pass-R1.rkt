@@ -1,10 +1,10 @@
 #lang racket
 
-(provide remove-complex-opera*-R1)
+(provide remove-complex-opera*-pass-R1)
 
 (require siek-compiler-gensym)
 
-(define (remove-complex-opera*-R1 p)
+(define (remove-complex-opera*-pass-R1 p)
   (match p
     [`(program () ,e)
      `(program () ,(rco-exp e))]
@@ -59,7 +59,7 @@
 (define current-R1-mismatch-handler
   (make-parameter
    (lambda (kind term)
-     (raise-arguments-error 'remove-complex-opera*-R1
+     (raise-arguments-error 'remove-complex-opera*-pass-R1
                             "failed to match"
                             "kind" kind
                             "term" term))))
