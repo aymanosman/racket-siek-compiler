@@ -6,7 +6,7 @@
 
 (define (interp-C0 p)
   (match p
-    [`(program () ((start . ,tail)))
+    [`(program ,info ((start . ,tail)))
      (interp-tail '() tail)]
      [_
        (raise-arguments-error 'interp-C0 "failed match"
