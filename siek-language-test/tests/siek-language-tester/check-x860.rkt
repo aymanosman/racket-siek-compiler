@@ -2,8 +2,10 @@
 
 (provide check-x860?
          check-not-x860?
+         check-x860=?
          check-x860*?
-         check-not-x860*?)
+         check-not-x860*?
+         check-x860*=?)
 
 (require racket/list
          racket/match
@@ -22,6 +24,12 @@
   (unless (not (empty? errors))
     (fail-check)))
 
+(define-check (check-x860=? p0 p1)
+  (check-x860? p0)
+  (check-x860? p1)
+  (unless (equal? p0 p1)
+    (fail-check)))
+
 (define-check (check-x860*? p)
   (define errors (parameterize ([current-x86? x860*?])
                    (check/errors p)))
@@ -32,6 +40,12 @@
   (define errors (parameterize ([current-x86? x860*?])
                    (check/errors p)))
   (unless (not (empty? errors))
+    (fail-check)))
+
+(define-check (check-x860*=? p0 p1)
+  (check-x860*? p0)
+  (check-x860*? p1)
+  (unless (equal? p0 p1)
     (fail-check)))
 
 ;; Aux
@@ -50,8 +64,9 @@
     errors))
 
 (define (fail-check/errors errors)
-  (with-check-info*
-    (map (match-lambda
-           [(cons kind term)
-            (make-check-info kind term)]) errors)
-    (thunk (fail-check))))
+  (with-check-info
+    (('failed-matches (nested-info
+                       (map (match-lambda
+                              [(cons kind term)
+                               (make-check-info kind term)]) errors))))
+    (fail-check)))

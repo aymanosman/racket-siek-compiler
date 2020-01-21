@@ -7,8 +7,7 @@
          siek-compiler/explicate-control-pass-R1
          siek-compiler/uncover-locals-pass-R1
          siek-compiler/select-instructions-pass-R1
-         siek-compiler/assign-homes-R1)
-
+         siek-compiler/assign-homes-pass-R1)
 
 (define compile (compose1 assign-homes-pass-R1
                           select-instructions-pass-R1
