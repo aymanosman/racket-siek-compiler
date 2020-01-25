@@ -2,7 +2,7 @@
 
 (require rackunit)
 
-(require siek-compiler/patch-instructions-pass-R1)
+(require siek-compiler-pass/patch-instructions-pass-R1)
 (require tests/siek-language-tester/check-x860)
 
 (check-x860=?

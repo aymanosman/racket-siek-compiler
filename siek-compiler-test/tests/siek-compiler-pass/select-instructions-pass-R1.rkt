@@ -2,7 +2,7 @@
 
 (require rackunit)
 
-(require siek-compiler/select-instructions-pass-R1)
+(require siek-compiler-pass/select-instructions-pass-R1)
 
 (check-equal?
  (select-instructions-pass-R1

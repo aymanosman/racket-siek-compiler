@@ -2,9 +2,9 @@
 
 (require tests/siek-compiler-tester/check-pass)
 
-(require siek-compiler/uniquify-pass-R1
-         siek-compiler/remove-complex-opera-pass-R1
-         siek-compiler/explicate-control-pass-R1)
+(require siek-compiler-pass/uniquify-pass-R1
+         siek-compiler-pass/remove-complex-opera-pass-R1
+         siek-compiler-pass/explicate-control-pass-R1)
 
 (define compile (compose1 explicate-control-pass-R1
                           remove-complex-opera*-pass-R1

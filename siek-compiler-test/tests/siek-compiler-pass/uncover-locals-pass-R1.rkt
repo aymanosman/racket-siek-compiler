@@ -2,7 +2,7 @@
 
 (require rackunit)
 
-(require siek-compiler/uncover-locals-pass-R1)
+(require siek-compiler-pass/uncover-locals-pass-R1)
 
 (check-equal?
   (uncover-locals-pass-R1

@@ -2,7 +2,7 @@
 
 (require rackunit)
 
-(require siek-compiler/assign-homes-pass-R1)
+(require siek-compiler-pass/assign-homes-pass-R1)
 (require tests/siek-language-tester/check-x860)
 
 (check-x860*=?

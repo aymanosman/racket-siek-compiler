@@ -2,7 +2,7 @@
 
 (require rackunit)
 
-(require siek-compiler/explicate-control-pass-R1)
+(require siek-compiler-pass/explicate-control-pass-R1)
 
 (check-equal?
  (explicate-control-pass-R1

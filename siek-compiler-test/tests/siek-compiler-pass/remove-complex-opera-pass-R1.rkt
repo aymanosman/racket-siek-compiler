@@ -2,7 +2,7 @@
 
 (require rackunit)
 
-(require siek-compiler/remove-complex-opera-pass-R1)
+(require siek-compiler-pass/remove-complex-opera-pass-R1)
 
 (check-equal?
  (remove-complex-opera*-pass-R1

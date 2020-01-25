@@ -2,13 +2,13 @@
 
 (require tests/siek-compiler-tester/check-pass)
 
-(require siek-compiler/uniquify-pass-R1
-         siek-compiler/remove-complex-opera-pass-R1
-         siek-compiler/explicate-control-pass-R1
-         siek-compiler/uncover-locals-pass-R1
-         siek-compiler/select-instructions-pass-R1
-         siek-compiler/assign-homes-pass-R1
-         siek-compiler/patch-instructions-pass-R1)
+(require siek-compiler-pass/uniquify-pass-R1
+         siek-compiler-pass/remove-complex-opera-pass-R1
+         siek-compiler-pass/explicate-control-pass-R1
+         siek-compiler-pass/uncover-locals-pass-R1
+         siek-compiler-pass/select-instructions-pass-R1
+         siek-compiler-pass/assign-homes-pass-R1
+         siek-compiler-pass/patch-instructions-pass-R1)
 
 (define compile (compose1 patch-instructions-pass-R1
                           assign-homes-pass-R1

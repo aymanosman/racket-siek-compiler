@@ -2,7 +2,7 @@
 
 (require tests/siek-compiler-tester/check-pass)
 
-(require siek-compiler/uniquify-pass-R1)
+(require siek-compiler-pass/uniquify-pass-R1)
 
 (check-pass* uniquify-pass-R1 (R1 -> R1)
             2
