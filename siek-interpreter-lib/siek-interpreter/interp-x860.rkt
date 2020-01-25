@@ -121,20 +121,6 @@
     [_
      (report-missing-info-key-error key info)]))
 
-(define (report-missing-label-error label code)
-  (raise-arguments-error 'interp-x860 "missing label"
-                         "label" label
-                         "in labels..." (map car code)))
-
-(define (report-missing-info-key-error key code)
-  (raise-arguments-error 'interp-x860 "key missing in info"
-                         "key" key))
-
-(define (report-mismatch-error kind term)
-  (raise-arguments-error 'interp-x860 "failed match"
-                         "kind" kind
-                         "term" term))
-
 (define (extend env . entry*)
   (let loop ([env env]
              [entry* entry*])
@@ -182,3 +168,17 @@
   (raise-arguments-error 'interp-x860 "variables are not supported in the current language (did you mean to use pseudo-x86?)"
                          "current-x86" (current-x86)
                          "variable" v))
+
+(define (report-missing-label-error label code)
+  (raise-arguments-error 'interp-x860 "missing label"
+    "label" label
+    "in labels..." (map car code)))
+
+(define (report-missing-info-key-error key code)
+  (raise-arguments-error 'interp-x860 "key missing in info"
+    "key" key))
+
+(define (report-mismatch-error kind term)
+  (raise-arguments-error 'interp-x860 "failed match"
+    "kind" kind
+    "term" term))
