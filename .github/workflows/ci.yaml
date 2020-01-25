@@ -46,7 +46,7 @@ jobs:
         run: raco pkg install --name siek-compiler-test --link --auto --batch siek-compiler-test/
 
       - name: Run siek-compiler tests
-        run: raco test -c tests/siek-compiler
+        run: raco test -c tests/siek-compiler-pass
 
       - name: Run siek-compiler-commutative tests
         run: raco test -c tests/siek-compiler-commutative
