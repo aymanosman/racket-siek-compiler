@@ -6,7 +6,9 @@
   (match p
     [`(program ,info ((start . ,tail)))
      `(program ,info
-               ((start . (block () ,@(select-instructions-tail tail)))))]
+               ((start . (block ()
+                           ,@(select-instructions-tail tail)
+                           (jmp conclusion)))))]
     [_
      ((current-R1-mismatch-handler) 'top p)]))
 

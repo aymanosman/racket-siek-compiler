@@ -23,6 +23,8 @@
 
 (define (assign-homes-instr env i)
   (match i
+    [`(jmp ,l) i]
+    [`(callq ,l) i]
     [`(,x86-operator ,a* ...)
      `(,x86-operator ,@(map (lambda (a) (assign-homes-arg env a)) a*))]
     [_

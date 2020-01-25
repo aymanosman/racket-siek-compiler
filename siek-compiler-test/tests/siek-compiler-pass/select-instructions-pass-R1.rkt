@@ -14,7 +14,8 @@
            ((start . (block ()
                             (movq (int 10) (var x))
                             (addq (int 32) (var x))
-                            (movq (var x) (reg rax)))))))
+                            (movq (var x) (reg rax))
+                            (jmp conclusion))))))
 
 (check-equal?
  (select-instructions-pass-R1
@@ -25,7 +26,8 @@
  '(program ()
            ((start . (block ()
                             (addq (int 10) (var x))
-                            (movq (var x) (reg rax)))))))
+                            (movq (var x) (reg rax))
+                            (jmp conclusion))))))
 
 (check-equal?
  (select-instructions-pass-R1
@@ -38,7 +40,8 @@
                             (callq read_int)
                             ;; TODO redundant
                             (movq (reg rax) (var x))
-                            (movq (var x) (reg rax)))))))
+                            (movq (var x) (reg rax))
+                            (jmp conclusion))))))
 
 (check-equal?
  (select-instructions-pass-R1
@@ -50,7 +53,8 @@
            ((start . (block ()
                             ;; TODO redundant
                             (movq (int 42) (var y))
-                            (movq (var y) (reg rax)))))))
+                            (movq (var y) (reg rax))
+                            (jmp conclusion))))))
 
 (check-equal?
  (select-instructions-pass-R1
@@ -63,7 +67,8 @@
                             (movq (int 10) (var y))
                             (addq (int 20) (var y))
                             (movq (var y) (reg rax))
-                            (negq (reg rax)))))))
+                            (negq (reg rax))
+                            (jmp conclusion))))))
 
 (check-equal?
  (select-instructions-pass-R1
@@ -75,7 +80,8 @@
            ((start . (block ()
                             (addq (int 20) (var y))
                             (movq (var y) (reg rax))
-                            (negq (reg rax)))))))
+                            (negq (reg rax))
+                            (jmp conclusion))))))
 
 (check-equal?
  (select-instructions-pass-R1
@@ -87,7 +93,8 @@
            ((start . (block ()
                             (addq (int 20) (var y))
                             (movq (var y) (reg rax))
-                            (negq (reg rax)))))))
+                            (negq (reg rax))
+                            (jmp conclusion))))))
 
 (check-equal?
  (select-instructions-pass-R1
@@ -102,4 +109,5 @@
                             (movq (int 10) (var x))
                             (movq (var x) (var y))
                             (addq (int 20) (var y))
-                            (movq (var y) (reg rax)))))))
+                            (movq (var y) (reg rax))
+                            (jmp conclusion))))))
