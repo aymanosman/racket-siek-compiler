@@ -23,3 +23,4 @@
 (provide/require "patch-instructions-pass-R1.rkt")
 (provide/require "print-x86-pass-R1.rkt")
 (provide/require "uncover-live-pass-R1.rkt")
+(provide/require "build-interference-pass-R1.rkt")
