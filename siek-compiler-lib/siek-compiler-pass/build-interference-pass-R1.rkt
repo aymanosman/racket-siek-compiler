@@ -1,6 +1,20 @@
 #lang racket
 
+(provide build-interference-pass-R1.rkt)
+
 (require graph)
+
+(define (build-interference-pass-R1.rkt p)
+  (match p
+    [_
+     (report-mismatch-error 'top p)]))
+
+;; Aux
+
+(define (report-mismatch-error kind term)
+  (raise-arguments-error 'build-interference-pass-R1 "failed match"
+                         "kind" kind
+                         "term" term))
 
 '((v w)
   (w x y z)
