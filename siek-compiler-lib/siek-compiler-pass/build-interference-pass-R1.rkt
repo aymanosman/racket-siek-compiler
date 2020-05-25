@@ -1,10 +1,10 @@
 #lang racket
 
-(provide build-interference-pass-R1.rkt)
+(provide build-interference-pass-R1)
 
 (require graph)
 
-(define (build-interference-pass-R1.rkt p)
+(define (build-interference-pass-R1 p)
   (match p
     [_
      (report-mismatch-error 'top p)]))
