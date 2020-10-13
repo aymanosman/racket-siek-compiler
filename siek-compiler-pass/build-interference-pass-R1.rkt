@@ -15,15 +15,15 @@
   (raise-arguments-error 'build-interference-pass-R1 "failed match"
                          "kind" kind
                          "term" term))
-
+#;
 '((v w)
   (w x y z)
   (t.1 z))
 
-(define g
-  (unweighted-graph/undirected '((a b) (c d))))
+;(define g
+;  (unweighted-graph/undirected '((a b) (c d))))
 
-(get-edges g)
+;(get-edges g)
 
 (define live-afters
   (list (set)
@@ -42,6 +42,7 @@
         (set)))
 
 ;; naive
+#;
 (let loop ([l* (for/list ([x  live-afters]
                           [y  (rest live-afters)])
                  (cons x y))]

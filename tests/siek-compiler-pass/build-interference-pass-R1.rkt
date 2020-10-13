@@ -4,6 +4,7 @@
 
 (require siek-compiler-pass/build-interference-pass-R1)
 
+#;
 (check-equal?
  (build-interference-pass-R1
   `(program ()
