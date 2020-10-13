@@ -24,7 +24,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ~/.racket/download-cache
-          key: "{{ $runner.os }}"
+          key: "${{ runner.os }}"
 
       - run: raco pkg install --auto --batch
       - run: raco test -c tests/siek-language
