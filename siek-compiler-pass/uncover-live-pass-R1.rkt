@@ -36,9 +36,9 @@
 
 (define (W+R i)
   (match i
-    [`(jmp ,_) (none)]
-    [`(,op) (none)]
-    [`(negq ,a) (read+write a)]
+    [`(jmp ,_)       (none)]
+    [`(,op)          (none)]
+    [`(negq ,a)      (read+write a)]
     [`(addq ,a0 ,a1) (combine (read a0) (read+write a1))]
     [`(movq ,a0 ,a1) (combine (read a0) (write a1))]
     [_ (report-mismatch-error 'instr i)]))

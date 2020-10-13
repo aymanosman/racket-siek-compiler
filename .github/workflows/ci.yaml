@@ -8,7 +8,7 @@ jobs:
 
     strategy:
       matrix:
-        racket-version: [ '7.5' ]
+        racket-version: [ '7.8' ]
 
     name: Racket ${{ matrix.racket-version }}
 
@@ -21,32 +21,8 @@ jobs:
           architecture: x64
           version: ${{ matrix.racket-version }}
 
-      - name: Install siek-language-lib
-        run: raco pkg install --name siek-language-lib --link --auto --batch siek-language-lib/
-
-      - name: Install siek-language-test
-        run: raco pkg install --name siek-language-test --link --auto --batch siek-language-test/
-
-      - name: Run siek-langauge tests
-        run: raco test -c tests/siek-language
-
-      - name: Install siek-interpreter-lib
-        run: raco pkg install --name siek-interpreter-lib --link --auto --batch siek-interpreter-lib/
-
-      - name: Install siek-interpreter-test
-        run: raco pkg install --name siek-interpreter-test --link --auto --batch siek-interpreter-test/
-
-      - name: Run siek-interpreter tests
-        run: raco test -c tests/siek-interpreter
-
-      - name: Install siek-compiler-lib
-        run: raco pkg install --name siek-compiler-lib --link --auto --batch siek-compiler-lib/
-
-      - name: Install siek-compiler-test
-        run: raco pkg install --name siek-compiler-test --link --auto --batch siek-compiler-test/
-
-      - name: Run siek-compiler tests
-        run: raco test -c tests/siek-compiler-pass
-
-      - name: Run siek-compiler-commutative tests
-        run: raco test -c tests/siek-compiler-commutative
+      - run: raco pkg install --auto --batch
+      - run: raco test -c tests/siek-language
+      - run: raco test -c tests/siek-interpreter
+      - run: raco test -c tests/siek-compiler-pass
+      - run: raco test -c tests/siek-compiler-commutative
