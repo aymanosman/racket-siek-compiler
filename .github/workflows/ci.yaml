@@ -26,5 +26,5 @@ jobs:
           path: ~/.racket/download-cache
           key: "${{ runner.os }}"
 
-      - run: raco pkg install --auto --batch
+      - run: raco pkg install --auto --batch --no-docs
       - run: raco test tests/
