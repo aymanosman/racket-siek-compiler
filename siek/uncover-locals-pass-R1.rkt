@@ -2,14 +2,18 @@
 
 (provide uncover-locals-pass-R1)
 
+(require "raise-mismatch-error.rkt")
+
 (define (uncover-locals-pass-R1 p)
   (match p
-    [`(program ()
-        ((start . ,tail)))
-     `(program ((locals . ,(uncover-locals-tail tail)))
-        ((start . ,tail)))]
+    [`(program
+       ()
+       ((start . ,tail)))
+     `(program
+       ((locals . ,(uncover-locals-tail tail)))
+       ((start . ,tail)))]
     [_
-      ((current-R1-mismatch-handler) 'top p)]))
+     (raise-mismatch-error 'uncover-locals-pass-R1 'top p)]))
 
 (define (uncover-locals-tail t)
   (remove-duplicates
@@ -18,14 +22,4 @@
      [`(seq (assign ,var ,e) ,tail)
       (cons var (uncover-locals-tail tail))]
      [_
-       ((current-R1-mismatch-handler) 'tail t)])))
-
-;; Aux
-
-(define current-R1-mismatch-handler
-  (make-parameter
-    (lambda (kind term)
-      (raise-arguments-error 'uncover-locals-pass-R1
-        "failed to match"
-        "kind" kind
-        "term" term))))
+      (raise-mismatch-error 'uncover-locals-pass-R1 'tail t)])))

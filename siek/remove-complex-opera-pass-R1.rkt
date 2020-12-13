@@ -9,7 +9,7 @@
     [`(program () ,e)
      `(program () ,(rco-exp e))]
     [_
-     ((current-R1-mismatch-handler) 'top p)]))
+     (raise-mismatch-error 'remove-complex-opera*-pass-R1 'top p)]))
 
 (define (rco-exp e)
   (match e
@@ -24,10 +24,11 @@
      (add-lets (append env1 env0) `(+ ,v0 ,v1))]
     [(? symbol?) e]
     [`(let ([,x ,e0]) ,e1)
-     `(let ([,x ,(rco-exp e0)])
-        ,(rco-exp e1))]
+     `(let
+       ([,x ,(rco-exp e0)])
+       ,(rco-exp e1))]
     [_
-     ((current-R1-mismatch-handler) 'exp e)]))
+     (raise-mismatch-error 'remove-complex-opera*-pass-R1 'exp e)]))
 
 (define (rco-arg e)
   (match e
@@ -49,20 +50,13 @@
      (values e '())]
     [`(let ([,x ,e0]) ,e1)
      (define-values (v1 env1) (rco-arg e1))
-     (values v1 (append `((,x . ,(rco-exp e0)))
-                        env1))]
+     (values v1
+             (append `((,x . ,(rco-exp e0)))
+                     env1))]
     [_
-     ((current-R1-mismatch-handler) 'arg e)]))
+     (raise-mismatch-error 'remove-complex-opera*-pass-R1 'arg e)]))
 
 ;; Aux
-
-(define current-R1-mismatch-handler
-  (make-parameter
-   (lambda (kind term)
-     (raise-arguments-error 'remove-complex-opera*-pass-R1
-                            "failed to match"
-                            "kind" kind
-                            "term" term))))
 
 (define (add-lets env e)
   (let loop ([env env])
@@ -70,9 +64,6 @@
       [(empty? env) e]
       [else
        (match-define (cons var val) (first env))
-       `(let ([,var ,val])
-          ,(loop (rest env)))])))
-
-(define-syntax-rule (log message data)
-  (let ([str-expr (format "who: ~a\n  ~a" message data)])
-    (log-error str-expr)))
+       `(let
+         ([,var ,val])
+         ,(loop (rest env)))])))

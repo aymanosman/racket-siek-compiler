@@ -2,7 +2,8 @@
 
 (provide uncover-live-pass-R1)
 
-(require "live-afters.rkt")
+(require "live-afters.rkt"
+         "raise-mismatch-error.rkt")
 
 (define (uncover-live-pass-R1 p)
   (match p
@@ -13,7 +14,7 @@
          (match-lambda [(cons label block)
                         (cons label (uncover-live-block block))])
          code))]
-    [_ (report-mismatch-error 'top p)]))
+    [_ (raise-mismatch-error 'uncover-live-pass-R1 'top p)]))
 
 (define (uncover-live-block b)
   (match b
@@ -21,14 +22,4 @@
      `(block
        ((live-afters . ,(live-afters instr*)))
        ,@instr*)]
-    [_ (report-mismatch-error 'block b)]))
-
-;; Aux
-
-(define (report-mismatch-error kind term)
-  (raise-arguments-error 'uncover-live-pass-R1
-                         "failed match"
-                         "kind"
-                         kind
-                         "term"
-                         term))
+    [_ (raise-mismatch-error 'uncover-live-pass-R1 'block b)]))

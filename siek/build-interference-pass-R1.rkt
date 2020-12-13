@@ -2,7 +2,8 @@
 
 (provide build-interference-pass-R1)
 
-(require "build-interference.rkt")
+(require "build-interference.rkt"
+         "raise-mismatch-error.rkt")
 
 (define (build-interference-pass-R1 p)
   (match p
@@ -11,7 +12,7 @@
        ,info
        ,(map build-interference-block blocks))]
     [_
-     (report-mismatch-error 'top p)]))
+     (raise-mismatch-error 'build-interference-pass-R1 'top p)]))
 
 (define (build-interference-block b)
   (match b
@@ -21,14 +22,4 @@
              ((conflicts . ,(build-interference (dict-ref info 'live-afters) instr*)))
              ,@instr*))]
     [_
-     (report-mismatch-error 'block b)]))
-
-;; Aux
-
-(define (report-mismatch-error kind term)
-  (raise-arguments-error 'build-interference-pass-R1
-                         "failed match"
-                         "kind"
-                         kind
-                         "term"
-                         term))
+     (raise-mismatch-error 'build-interference-pass-R1 'block b)]))

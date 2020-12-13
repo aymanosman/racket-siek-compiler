@@ -2,15 +2,19 @@
 
 (provide select-instructions-pass-R1)
 
+(require "raise-mismatch-error.rkt")
+
 (define (select-instructions-pass-R1 p)
   (match p
     [`(program ,info ((start . ,tail)))
-     `(program ,info
-               ((start . (block ()
-                           ,@(select-instructions-tail tail)
-                           (jmp conclusion)))))]
+     `(program
+       ,info
+       ((start .
+               (block ()
+                      ,@(select-instructions-tail tail)
+                      (jmp conclusion)))))]
     [_
-     ((current-R1-mismatch-handler) 'top p)]))
+     (raise-mismatch-error 'select-instructions-pass-R1 'top p)]))
 
 (define (select-instructions-tail t)
   (match t
@@ -20,7 +24,7 @@
      (append (select-instructions-stmt stmt)
              (select-instructions-tail tail))]
     [_
-     ((current-R1-mismatch-handler) 'tail t)]))
+     (raise-mismatch-error 'select-instructions-pass-R1 'tail t)]))
 
 (define (select-instructions-stmt stmt)
   (match stmt
@@ -30,7 +34,7 @@
          [`(reg rax) v]
          [(? symbol?) `(var ,v)]
          [_
-          ((current-R1-mismatch-handler) 'var v)]))
+          (raise-mismatch-error 'select-instructions-pass-R1 'var v)]))
      (match e
        ;; Arg
        [(? fixnum?) (list `(movq (int ,e) ,r))]
@@ -56,18 +60,11 @@
         (list `(movq ,(select-instructions-arg a0) ,r)
               `(addq ,(select-instructions-arg a1) ,r))])]
     [_
-     ((current-R1-mismatch-handler) 'stmt stmt)]))
+     (raise-mismatch-error 'select-instructions-pass-R1 'stmt stmt)]))
 
 (define (select-instructions-arg a)
   (match a
     [(? fixnum?) `(int ,a)]
     [(? symbol?) `(var ,a)]
     [_
-     ((current-R1-mismatch-handler) 'arg a)]))
-
-(define current-R1-mismatch-handler
-  (make-parameter
-   (lambda (kind term)
-     (raise-arguments-error 'select-instructions-pass-R1 "failed match"
-                            "kind" kind
-                            "term" term))))
+     (raise-mismatch-error 'select-instructions-pass-R1 'arg a)]))
