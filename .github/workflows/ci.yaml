@@ -27,4 +27,4 @@ jobs:
           key: "${{ runner.os }}"
 
       - run: raco pkg install --auto --batch --no-docs
-      - run: raco test tests/
+      - run: raco test -j 4 .
