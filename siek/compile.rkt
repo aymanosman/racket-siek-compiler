@@ -28,7 +28,7 @@
 (define compile/R1/chapter3
   (compose1 print-x86-pass-R1
             patch-instructions-pass-R1
-            ;; allocate-registers-pass-R1
+            allocate-registers-pass-R1
             build-interference-pass-R1
             uncover-live-pass-R1
             select-instructions-pass-R1

@@ -4,6 +4,8 @@
          rackunit/text-ui
          "x860.rkt"
          "patch-instructions-pass-R1.rkt"
+         "allocate-registers-pass-R1.rkt"
+         "color-graph.rkt"
          "assign-homes-pass-R1.rkt"
          "select-instructions-pass-R1.rkt"
          "uncover-locals-pass-R1.rkt"
@@ -16,6 +18,8 @@
  (test-suite "all-tests"
              x860-tests
              patch-instructions-tests
+             allocate-registers-tests
+             color-graph-tests
              assign-homes-tests
              select-instructions-tests
              uncover-locals-tests
