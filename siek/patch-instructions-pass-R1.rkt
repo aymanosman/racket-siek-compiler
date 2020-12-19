@@ -2,7 +2,8 @@
 
 (provide patch-instructions-pass-R1)
 
-(require "raise-mismatch-error.rkt")
+(require "match-instr.rkt"
+         "raise-mismatch-error.rkt")
 
 (define (patch-instructions-pass-R1 p)
   (match p
@@ -18,18 +19,14 @@
 
 (define (patch-instructions-instr i)
   (match i
-    [`(,op ,a) (list i)]
+    [`(,op ,a)
+     (list i)]
+    [`(,op (deref ,a0) (deref ,a1))
+     `((movq ,a0 (reg rax))
+       (,op (reg rax) ,a1))]
+    [`(movq ,(arg a0) ,(arg a1)) #:when (symbol=? a0 a1)
+     empty]
     [`(,op ,a0 ,a1)
-     (cond
-       [(and (deref? a0) (deref? a1))
-        `((movq ,a0 (reg rax))
-          (,op (reg rax) ,a1))]
-       [else (list i)])]
-    [_ (raise-mismatch-error 'patch-instructions-pass-R1 'instr i)]))
-
-;; Aux
-
-(define (deref? a)
-  (match a
-    [`(deref ,_ ,_) #t]
-    [_ #f]))
+     (list i)]
+    [_
+     (raise-mismatch-error 'patch-instructions-pass-R1 'instr i)]))

@@ -5,6 +5,7 @@
          "x860.rkt"
          "patch-instructions-pass-R1.rkt"
          "allocate-registers-pass-R1.rkt"
+         "move-related.rkt"
          "color-graph.rkt"
          "assign-homes-pass-R1.rkt"
          "select-instructions-pass-R1.rkt"
@@ -19,6 +20,7 @@
              x860-tests
              patch-instructions-tests
              allocate-registers-tests
+             move-related-tests
              color-graph-tests
              assign-homes-tests
              select-instructions-tests

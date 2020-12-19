@@ -2,6 +2,8 @@
 
 (provide assign-homes)
 
+(require "raise-mismatch-error.rkt")
+
 (define (assign-homes env instr*)
   (map (lambda (i) (assign-homes-instr env i)) instr*))
 

@@ -2,7 +2,8 @@
 
 (provide remove-complex-opera*-pass-R1)
 
-(require "gensym.rkt")
+(require "gensym.rkt"
+         "raise-mismatch-error.rkt")
 
 (define (remove-complex-opera*-pass-R1 p)
   (match p
