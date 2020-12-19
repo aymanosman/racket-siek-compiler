@@ -59,7 +59,7 @@
      (printf "~a" l)]))
 
 (define (print-x86-main)
-  (printf "  .global ")
+  (printf ".global ")
   (print-x86-label 'main)
   (newline)
   (print-x86-label 'main)

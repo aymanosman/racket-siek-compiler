@@ -3,6 +3,7 @@
 (require rackunit
          rackunit/text-ui
          "x860.rkt"
+         "print-x86-pass-R1.rkt"
          "patch-instructions-pass-R1.rkt"
          "allocate-registers-pass-R1.rkt"
          "move-related.rkt"
@@ -18,6 +19,7 @@
 (run-tests
  (test-suite "all-tests"
              x860-tests
+             print-x86-tests
              patch-instructions-tests
              allocate-registers-tests
              move-related-tests

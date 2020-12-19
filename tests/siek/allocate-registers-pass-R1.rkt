@@ -5,7 +5,8 @@
 (require rackunit
          "check-pass.rkt")
 
-(require siek)
+(require siek
+         siek/gensym)
 
 (define compile
   (compose1
@@ -31,29 +32,31 @@
                (let ([x (let ([x 4])
                           (+ x 1))])
                  (+ x 2)))
-
-  (test-case
-   "move biasing"
-   (check-equal?
-    (compile
-     '(program ()
-               (let ([v 1])
-                 (let ([w 42])
-                   (let ([x (+ v 7)])
-                     (let ([y x])
-                       (let ([z (+ x w)])
-                         (+ z (- y)))))))))
-    '(program ((locals . (v.1 w.2 x.3 y.4 z.5 tmp.6)))
-              ((start . (block ((stack-space . 0))
-                               (movq (int 1) (reg rcx))
-                               (movq (int 42) (reg rbx))
-                               ;; (movq (reg rcx) (reg rcx))
-                               (addq (int 7) (reg rcx))
-                               (movq (reg rcx) (reg rdx))
-                               ;; (movq (reg rcx) (reg rcx))
-                               (addq (reg rbx) (reg rcx))
-                               ;; (movq (reg rdx) (reg rdx))
-                               (negq (reg rdx))
-                               (movq (reg rcx) (reg rax))
-                               (addq (reg rdx) (reg rax))
-                               (jmp conclusion))))))))
+  (test-case "move biasing"
+    (check-equal?
+     (parameterize ([current-gensym (make-gensym)])
+       (compile
+        '(program
+          ()
+          (let ([v 1])
+            (let ([w 42])
+              (let ([x (+ v 7)])
+                (let ([y x])
+                  (let ([z (+ x w)])
+                    (+ z (- y))))))))))
+     '(program
+       ((locals . (v.1 w.2 x.3 y.4 z.5 tmp.6)))
+       ((start .
+               (block ((stack-space . 0))
+                      (movq (int 1) (reg rcx))
+                      (movq (int 42) (reg rbx))
+                      ;; (movq (reg rcx) (reg rcx))
+                      (addq (int 7) (reg rcx))
+                      (movq (reg rcx) (reg rdx))
+                      ;; (movq (reg rcx) (reg rcx))
+                      (addq (reg rbx) (reg rcx))
+                      ;; (movq (reg rdx) (reg rdx))
+                      (negq (reg rdx))
+                      (movq (reg rcx) (reg rax))
+                      (addq (reg rdx) (reg rax))
+                      (jmp conclusion))))))))

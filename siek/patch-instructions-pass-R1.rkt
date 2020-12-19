@@ -21,9 +21,9 @@
   (match i
     [`(,op ,a)
      (list i)]
-    [`(,op (deref ,a0) (deref ,a1))
-     `((movq ,a0 (reg rax))
-       (,op (reg rax) ,a1))]
+    [`(,op (deref ,r0 ,a0) (deref ,r1 ,a1))
+     `((movq (deref ,r0 ,a0) (reg rax))
+       (,op (reg rax) (deref ,r1 ,a1)))]
     [`(movq ,(arg a0) ,(arg a1)) #:when (symbol=? a0 a1)
      empty]
     [`(,op ,a0 ,a1)
