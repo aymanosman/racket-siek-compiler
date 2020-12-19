@@ -8,9 +8,10 @@ jobs:
 
     strategy:
       matrix:
-        racket-version: [ '7.8' ]
+        racket-version: [ '7.8', '7.9' ]
+        racket-variant: [ 'CS', 'BC' ]
 
-    name: Racket ${{ matrix.racket-version }}
+    name: Racket ${{ matrix.racket-version }} [${{ matrix.racket-variant }}]
 
     steps:
       - uses: actions/checkout@master
@@ -19,6 +20,7 @@ jobs:
         uses: Bogdanp/setup-racket@v0.5
         with:
           architecture: x64
+          variant: ${{ matrix.racket-variant }}
           version: ${{ matrix.racket-version }}
 
       - uses: actions/cache@v2
