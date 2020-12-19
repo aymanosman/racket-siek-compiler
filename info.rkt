@@ -2,4 +2,4 @@
 
 (define collection 'multi)
 
-(define deps '("graph"))
+(define deps '("graph-lib" "threading-lib"))
