@@ -4,7 +4,8 @@
 
 (require "assign-homes.rkt"
          "color-graph.rkt"
-         "move-related.rkt")
+         "move-related.rkt"
+         "options.rkt")
 
 (define (allocate-registers-pass-R1 p)
   (match p
@@ -21,7 +22,9 @@
   (match b
     [`(block ,info ,instr* ...)
      (define conflict (dict-ref info 'conflicts))
-     (define colors (color-graph conflict (move-related instr*)))
+     (define colors
+       (color-graph conflict
+                    (and (compiler-enable-move-biasing?) (move-related instr*))))
      (define homes (colors->homes colors))
      `(block
        ((stack-space . ,(colors->stack-space colors)))
@@ -55,6 +58,9 @@
   (- (* 8 (add1 n))))
 
 (define register-table
-  (hash 0 'rbx
-        1 'rcx
-        2 'rdx))
+  (hash 0
+        'rbx
+        1
+        'rcx
+        2
+        'rdx))

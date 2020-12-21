@@ -10,7 +10,8 @@
   (define q (make-heap node<=?))
   (define nodes
     (for/hash ([v (get-vertices conflict-graph)]
-               #:when (not (member v registers)))
+               #:when
+               (not (member v registers)))
       (define n (node v (mutable-set)))
       (heap-add! q n)
       (values v n)))
@@ -25,7 +26,8 @@
        (define c (choose-color colors conflicts move-related))
        (hash-set! colors (node-name n) c)
        (for ([n (stream-map (lambda (v) (hash-ref nodes v #f)) conflicts)]
-             #:when n)
+             #:when
+             n)
          (node-sat-add! n c)
          (heap-notify! q n))
        (loop)]))
@@ -34,15 +36,16 @@
 (define registers '(rax))
 
 (define (choose-color colors conflicts move-related)
-  (or (move-color colors conflicts move-related)
+  (or (and move-related (move-color colors conflicts move-related))
       (available-color colors conflicts)))
 
 (define (move-color colors conflicts move-related)
   (for/first ([m move-related]
-              #:when (and (not (set-member? conflicts m))
-                          ;; TODO reject stack locations
-                          (hash-has-key? colors m)))
-    (hash-ref colors m #f)))
+              #:when
+              (and (not (set-member? conflicts m))
+                   ;; TODO reject stack locations
+                   (hash-has-key? colors m)))
+             (hash-ref colors m #f)))
 
 (define (available-color colors conflicts)
   (local-require threading)
@@ -52,7 +55,6 @@
         (stream-filter identity _)
         stream->list
         (sort _ <=)))
-
   (for/fold ([c 0])
             ([d assigns]
              #:break
@@ -77,7 +79,7 @@
 
 (define (heap-pop! q)
   (begin0 (heap-min q)
-          (heap-remove-min! q)))
+    (heap-remove-min! q)))
 
 (define (heap-notify! q n)
   (and (heap-remove! q n)

@@ -5,6 +5,8 @@
     (provide (all-from-out module-path))
     (require module-path)))
 
+(provide/require "options.rkt")
+
 (provide/require "R0.rkt")
 (provide/require "R1.rkt")
 (provide/require "x860.rkt")
