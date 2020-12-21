@@ -1,28 +1,51 @@
 #lang racket
 
-(provide R1?)
+(provide R1%
+         R1?
+         interp-R1)
 
-;; Exp := Int | (read) | (- Exp) | (+ Exp Exp)
-;;      | Var | (let ([Var Exp]) Exp)
-;; R1  := (program Info Exp)
+(require "R0.rkt")
 
-(define (R1? p)
-  (match p
-    [`(program ,info ,e)
-     (and (R1-info? info)
-          (R1-exp? e))]
-    [_ #f]))
+;; exp := ...
+;;      | var | (let ([x e]) e)
 
-(define (R1-info? i)
-  (list? i))
+(define (R1? v)
+  (send (new R1%) ? v))
 
-(define (R1-exp? e)
-  (match e
-    [(? fixnum?) #t]
-    [`(read) #t]
-    [`(- ,e) (R1-exp? e)]
-    [`(+ ,e0 ,e1) (and (R1-exp? e0) (R1-exp? e1))]
-    [(? symbol?) #t]
-    [`(let ([,var ,e0]) ,e1)
-     (and (symbol? var) (R1-exp? e0) (R1-exp? e1))]
-    [_ #f]))
+(define (interp-R1 p)
+  (send (new R1%) interp p))
+
+(define R1%
+  (class R0%
+    (super-new)
+
+    (define/override (who-interp)
+      'interp-R1)
+
+    (define/override (exp? v)
+      (match v
+        [(? symbol?) #t]
+        [`(let ([,var ,e0]) ,e1)
+         (and (symbol? var) (exp? e0) (exp? e1))]
+        [_ (super exp? v)]))
+
+    (define/override ((interp-exp env) e)
+      (match e
+        [(? symbol? x)
+         (dict-ref env x)]
+        [`(let ([,x ,e0]) ,e1)
+         ((interp-exp (dict-set env x ((interp-exp env) e0)))
+          e1)]
+        [_
+         ((super interp-exp env) e)]))))
+
+
+;; TODO
+
+;; R1† (ANF)
+
+;; exp := ...
+;;      | atom | (- a) | (+ a a)
+;; atom := int | var
+
+

@@ -9,10 +9,9 @@
 
 (provide/require "R0.rkt")
 (provide/require "R1.rkt")
+(provide/require "R2.rkt")
 (provide/require "x860.rkt")
 
-(provide/require "interp-R0.rkt")
-(provide/require "interp-R1.rkt")
 (provide/require "interp-C0.rkt")
 (provide/require "interp-x860.rkt")
 
