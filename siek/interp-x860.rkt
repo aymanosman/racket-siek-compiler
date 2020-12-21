@@ -7,9 +7,8 @@
          racket/fixnum)
 
 (require "block.rkt"
+         "options.rkt"
          "raise-mismatch-error.rkt")
-
-(define current-x86 (make-parameter 'x860))
 
 (define (interp-x860* p)
   (parameterize ([current-x86 'x860*])

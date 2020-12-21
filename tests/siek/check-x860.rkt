@@ -9,38 +9,33 @@
 
 (require racket/list
          racket/match
-         racket/function)
+         racket/bool)
 
 (require siek)
 
 (require rackunit)
 
-(define-check (check-x860? p)
-  (define errors (check/errors p))
-  (unless (empty? errors)
+(define (do-check-pred2 pred? ok? p)
+  (define errors (get-errors pred? p))
+  (unless (ok? errors)
     (fail-check/errors errors)))
 
+(define-check (check-x860? p)
+  (do-check-pred2 x860? empty? p))
+
 (define-check (check-not-x860? p)
-  (define errors (check/errors p))
-  (unless (not (empty? errors))
-    (fail-check)))
+  (do-check-pred2 x860? pair? p))
+
+(define-check (check-x860*? p)
+  (do-check-pred2 x860*? empty? p))
+
+(define-check (check-not-x860*? p)
+  (do-check-pred2 x860*? pair? p))
 
 (define-check (check-x860=? p0 p1)
   (check-x860? p0)
   (check-x860? p1)
   (unless (equal? p0 p1)
-    (fail-check)))
-
-(define-check (check-x860*? p)
-  (define errors (parameterize ([current-x86? x860*?])
-                   (check/errors p)))
-  (unless (empty? errors)
-    (fail-check/errors errors)))
-
-(define-check (check-not-x860*? p)
-  (define errors (parameterize ([current-x86? x860*?])
-                   (check/errors p)))
-  (unless (not (empty? errors))
     (fail-check)))
 
 (define-check (check-x860*=? p0 p1)
@@ -49,25 +44,19 @@
   (unless (equal? p0 p1)
     (fail-check)))
 
-;; Aux
-
-(define current-x86? (make-parameter x860?))
-
-(define (check/errors p)
+(define (get-errors pred? p)
   (define errors '())
-  (parameterize ([current-x860-mismatch-handler
-                  (case-lambda
-                    [(kind term)
-                     (set! errors (list (cons kind term)))]
-                    [(the-errors)
-                     (set! errors the-errors)])])
-    ((current-x86?) p)
+  (parameterize ([current-mismatch-handler
+                  (lambda (who kind term)
+                    (cond
+                      [(symbol=? 'errors kind)
+                       (set! errors term)]
+                      [else
+                       (set! errors (list (cons kind term)))]))])
+    (pred? p)
     errors))
 
 (define (fail-check/errors errors)
-  (with-check-info
-    (('failed-matches (nested-info
-                       (map (match-lambda
-                              [(cons kind term)
-                               (make-check-info kind term)]) errors))))
+  (with-check-info (['failed-matches (nested-info (map (match-lambda [(cons kind term) (make-check-info kind term)])
+                                                       errors))])
     (fail-check)))

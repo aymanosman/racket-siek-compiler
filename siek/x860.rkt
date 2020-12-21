@@ -1,14 +1,16 @@
 #lang racket
 
 (provide x860?
-         x860*?
-         current-x860-mismatch-handler)
+         x860*?)
+
+(require "raise-mismatch-error.rkt"
+         "options.rkt")
 
 (define (x860? p)
   (match p
-    [`(program ,info ((start . ,block)))
+    [`(program ,_ ((start . ,block)))
      (x860-block? block)]
-    [_ ((current-x860-mismatch-handler) 'top p)]))
+    [_ (raise-mismatch-error (current-x86) 'top p)]))
 
 (define (x860*? p)
   (parameterize ([current-x86 'x860*])
@@ -16,9 +18,9 @@
 
 (define (x860-block? b)
   (match b
-    [`(block ,info ,instr* ...)
+    [`(block ,_ ,instr* ...)
      (andmap x860*-instr? instr*)]
-    [_ ((current-x860-mismatch-handler) 'block b)]))
+    [_ (raise-mismatch-error (current-x86) 'block b)]))
 
 (define (x860*-instr? i)
   (match i
@@ -30,21 +32,21 @@
     [`(callq ,label)
      (cond
        [(symbol? label) #t]
-       [else ((current-x860-mismatch-handler) 'label label)])]
+       [else (raise-mismatch-error (current-x86) 'label label)])]
     [`(pushq ,a) (x860-args? a)]
     [`(popq ,a) (x860-args? a)]
-    [_ ((current-x860-mismatch-handler) 'instr i)]))
+    [_ (raise-mismatch-error (current-x86) 'instr i)]))
 
 (define (x860-arg? a)
   (match a
     [`(int ,n)
      (cond
        [(fixnum? n) #t]
-       [else ((current-x860-mismatch-handler) 'int n)])]
+       [else (raise-mismatch-error (current-x86) 'int n)])]
     [`(reg ,r)
      (cond
        [(x860-register? r) #t]
-       [else ((current-x860-mismatch-handler) 'register r)])]
+       [else (raise-mismatch-error (current-x86) 'register r)])]
     [`(deref ,r ,n)
      (define errors
        (filter identity
@@ -59,27 +61,26 @@
      (cond
        [(empty? errors) #t]
        [else
-        ((current-x860-mismatch-handler) errors)])]
+        (raise-mismatch-error (current-x86) 'errors errors)])]
     [`(var ,v)
      (cond
        [(equal? (current-x86) 'x860*)
         (cond
           [(symbol? v) #t]
           [else
-           ((current-x860-mismatch-handler) 'var v)])]
+           (raise-mismatch-error (current-x86) 'var v)])]
        [else
-        ((current-x860-mismatch-handler) (list (cons 'arg a)
+        (raise-mismatch-error (current-x86)
+                              'errors (list (cons 'arg a)
                                                (cons 'variables-not-supported a)))])]
 
-    [_ ((current-x860-mismatch-handler) 'arg a)]))
+    [_ (raise-mismatch-error (current-x86) 'arg a)]))
 
 (define (x860-register? r)
   (cond
     [(member r '(rsp rbp rax rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 r13 r14 r15))
      #t]
     [else #f]))
-
-;; Aux
 
 (define (x860-args? . a*)
   (define errors
@@ -92,12 +93,4 @@
   (cond
     [(empty? errors) #t]
     [else
-     ((current-x860-mismatch-handler) errors)]))
-
-(define current-x86 (make-parameter 'x860))
-
-(define current-x860-mismatch-handler
-  (make-parameter
-   (case-lambda
-     [(kind term) #f]
-     [(errors) #f])))
+     (raise-mismatch-error (current-x86) 'errors errors)]))

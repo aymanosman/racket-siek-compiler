@@ -2,10 +2,7 @@
 
 (provide raise-mismatch-error)
 
+(require "options.rkt")
+
 (define (raise-mismatch-error who kind term)
-  (raise-arguments-error who
-                         "failed to match"
-                         "kind"
-                         kind
-                         "term"
-                         term))
+  ((current-mismatch-handler) who kind term))
