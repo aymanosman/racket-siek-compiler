@@ -8,17 +8,18 @@
 (require siek
          siek/gensym)
 
-(define compile
-  (compose1
-   patch-instructions-pass-R1
-   allocate-registers-pass-R1
-   build-interference-pass-R1
-   uncover-live-pass-R1
-   select-instructions-pass-R1
-   uncover-locals-pass-R1
-   explicate-control-pass-R1
+(define-compiler compile
+  (uniquify-pass-R1
    remove-complex-opera*-pass-R1
-   uniquify-pass-R1))
+   explicate-control-pass-R1
+   uncover-locals-pass-R1
+   select-instructions-pass-R1
+   uncover-live-pass-R1
+   build-interference-pass-R1
+   allocate-registers-pass-R1
+   patch-instructions-pass-R1))
+
+;; (compiler-trace! compile #t)
 
 (define-test-suite allocate-registers-tests
   ;; TODO rename check-pass* test-compiler
@@ -32,33 +33,36 @@
                (let ([x (let ([x 4])
                           (+ x 1))])
                  (+ x 2)))
-  ;; TODO this fails on BC (guess is heap-pop! returns a different value on each variant)
-  #;
-  (test-case "move biasing"
-    (check-equal?
-     (parameterize ([current-gensym (make-gensym)])
-       (compile
-        '(program
-          ()
-          (let ([v 1])
-            (let ([w 42])
-              (let ([x (+ v 7)])
-                (let ([y x])
-                  (let ([z (+ x w)])
-                    (+ z (- y))))))))))
-     '(program
-       ((locals . (v.1 w.2 x.3 y.4 z.5 tmp.6)))
-       ((start .
-               (block ((stack-space . 0))
-                      (movq (int 1) (reg rcx))
-                      (movq (int 42) (reg rbx))
-                      ;; (movq (reg rcx) (reg rcx))
-                      (addq (int 7) (reg rcx))
-                      (movq (reg rcx) (reg rdx))
-                      ;; (movq (reg rcx) (reg rcx))
-                      (addq (reg rbx) (reg rcx))
-                      ;; (movq (reg rdx) (reg rdx))
-                      (negq (reg rdx))
-                      (movq (reg rcx) (reg rax))
-                      (addq (reg rdx) (reg rax))
-                      (jmp conclusion))))))))
+  (let ()
+    (define-compiler compile
+      (uniquify-pass-R1
+       remove-complex-opera*-pass-R1
+       explicate-control-pass-R1
+       uncover-locals-pass-R1
+       select-instructions-pass-R1
+       uncover-live-pass-R1
+       build-interference-pass-R1
+       allocate-registers-pass-R1))
+
+    (define assembly (parameterize ([current-gensym (make-gensym)])
+         (compile
+          '(program
+            ()
+            (let ([v 1])
+              (let ([w 42])
+                (let ([x (+ v 7)])
+                  (let ([y x])
+                    (let ([z (+ x w)])
+                      (+ z (- y)))))))))))
+
+    (define num-instr
+      (lambda (p)
+        (match p
+          [`(program ,_ ((start . (block ,_ ,instr* ...))))
+           (length instr*)])))
+
+    (test-case "move biasing should reveal 3 redundant instructions"
+      (check-equal?
+       (- (num-instr assembly)
+          (num-instr (patch-instructions-pass-R1 assembly)))
+       3))))
