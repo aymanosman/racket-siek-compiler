@@ -14,6 +14,8 @@
 (provide/require "interp-C0.rkt")
 (provide/require "interp-x860.rkt")
 
+(provide/require "define-compiler.rkt")
+
 (provide/require "uniquify-pass-R1.rkt")
 (provide/require "remove-complex-opera-pass-R1.rkt")
 (provide/require "explicate-control-pass-R1.rkt")
