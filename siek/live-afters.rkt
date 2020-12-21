@@ -7,7 +7,7 @@
 (define live-afters
   (case-lambda
    [(instr*)
-    (live-afters (list (set)) (reverse instr*))]
+    (rest (live-afters (list (set)) (reverse instr*)))]
    ;; L(k) = L(k+1) - W(k) + R(k)
    [(acc i*)
     (match i*
@@ -59,8 +59,7 @@
       (addq (var t.1) (var t.2))
       (movq (var t.2) (reg rax))
       (jmp conclusion)))
-   (list (set)
-         (set 'v)
+   (list (set 'v)
          (set 'v 'w)
          (set 'w 'x)
          (set 'w 'x)
