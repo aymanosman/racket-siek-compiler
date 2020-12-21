@@ -28,17 +28,39 @@
         [`(- ,e0 ,e1)
          (and (exp? e0) (exp? e1))]
         [(? boolean?) #t]
-        [`(,op ,e0 ,e1)
-         (app? op (list e0 e1))]
+        [`(if ,e0 ,e1 ,e2)
+         (and (exp? e0) (exp? e1) (exp? e2))]
+        [`(,op ,e* ...) #:when (op? op)
+                        (andmap (lambda (e) (exp? e)) e*)]
         [_ (super exp? e)]))
 
-    (define/public (app? op e*)
-      (and (op? op)
-           (andmap (lambda (e) (exp? e) e*))))
+    (define/override ((interp-exp env) e)
+      (match e
+        [`(- ,e0 ,e1)
+         (- ((interp-exp env) e0) ((interp-exp env) e1))]
+        [(? boolean?) e]
+        [`(if ,cond ,then ,else)
+         (match ((interp-exp env) cond)
+           [#t ((interp-exp env) then)]
+           [#f ((interp-exp env) else)])]
+        [`(and ,e0 ,e1)
+         (match ((interp-exp env) e0)
+           [#t ((interp-exp env) e1)]
+           [#f #f])]
+        [`(or ,e0 ,e1)
+         (match ((interp-exp env) e0)
+           [#f ((interp-exp env) e1)]
+           [#t #t])]
+        [`(,op ,e* ...) #:when (op? op)
+                        (interp-op op (map (interp-exp env) e*))]
+        [_
+         ((super interp-exp env) e)]))
 
-    (define/public (op? op)
-      (or (cmp? op)
-          (member op '(read + - and or not))))
+    (define/public (op? v)
+      (member v '(eq? < <= > >= and or not)))
 
-    (define/public (cmp? v)
-      (member v '(eq? < <= > >=)))))
+    (define/public (operator-types)
+      (hash 'eq? eq? '< < '<= <= '> > '>= >=))
+
+    (define/public (interp-op op args)
+      (apply (hash-ref (operator-types) op) args))))
