@@ -16,7 +16,10 @@
          "explicate-control-pass-R1.rkt"
          "remove-complex-opera-pass-R1.rkt"
          "uniquify-pass-R1.rkt"
-         "interp-x860.rkt")
+         "interp-x860.rkt"
+         "R2.rkt"
+         "R1.rkt"
+         "R0.rkt")
 
 (run-tests
  (test-suite "all-tests"
@@ -34,4 +37,7 @@
              explicate-control-tests
              remove-complex-opera*-tests
              uniquify-tests
-             interp-x860-tests))
+             interp-x860-tests
+             interp-R2-tests
+             interp-R1-tests
+             interp-R0-tests))

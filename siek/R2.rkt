@@ -4,7 +4,8 @@
          R2?
          interp-R2)
 
-(require "R1.rkt")
+(require "R1.rkt"
+         "raise-mismatch-error.rkt")
 
 ;; bool := #t | #f
 ;; cmp := eq? | < | <= | > | >=
@@ -22,6 +23,9 @@
 (define R2%
   (class R1%
     (super-new)
+
+    (define/override (who-interp)
+      'interp-R2)
 
     (define/override (exp? e)
       (match e
@@ -42,7 +46,9 @@
         [`(if ,cond ,then ,else)
          (match ((interp-exp env) cond)
            [#t ((interp-exp env) then)]
-           [#f ((interp-exp env) else)])]
+           [#f ((interp-exp env) else)]
+           [_
+            (raise-mismatch-error (who-interp) 'exp cond)])]
         [`(and ,e0 ,e1)
          (match ((interp-exp env) e0)
            [#t ((interp-exp env) e1)]
