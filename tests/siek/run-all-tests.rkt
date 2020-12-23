@@ -16,7 +16,10 @@
          "explicate-control-pass-R1.rkt"
          "remove-complex-opera-pass-R1.rkt"
          "uniquify-pass-R1.rkt"
+         "interp-x861.rkt"
          "interp-x860.rkt"
+         "C1.rkt"
+         "C0.rkt"
          "R2.rkt"
          "R1.rkt"
          "R0.rkt")
@@ -37,7 +40,10 @@
              explicate-control-tests
              remove-complex-opera*-tests
              uniquify-tests
+             interp-x861-tests
              interp-x860-tests
+             interp-C0-tests
+             interp-C1-tests
              typecheck-R2-tests
              interp-R2-tests
              interp-R1-tests

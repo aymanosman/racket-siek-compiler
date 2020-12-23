@@ -10,9 +10,10 @@
 (provide/require "R0.rkt")
 (provide/require "R1.rkt")
 (provide/require "R2.rkt")
+(provide/require "C0.rkt")
+(provide/require "C1.rkt")
 (provide/require "x860.rkt")
-
-(provide/require "interp-C0.rkt")
+(provide/require "x861.rkt")
 
 (provide/require "define-compiler.rkt")
 

@@ -1,0 +1,30 @@
+#lang racket
+
+(provide define-x86)
+
+(require (for-syntax racket/syntax racket/string)
+         "options.rkt")
+
+(define-syntax (define-x86 stx)
+  (syntax-case stx ()
+    [(_ L%)
+     (let ()
+       (define/with-syntax L (format-id #'L% "~a" (string-trim (symbol->string (syntax-e #'L%)) "%" #:left? #f)))
+       (define/with-syntax L? (format-id #'L "~a?" (syntax-e #'L)))
+       (define/with-syntax L*? (format-id #'L "~a*?" (syntax-e #'L)))
+       (define/with-syntax interp-L (format-id #'L "interp-~a" (syntax-e #'L)))
+       (define/with-syntax interp-L* (format-id #'L "interp-~a*" (syntax-e #'L)))
+       (define/with-syntax format-L (format-id #'L "format-~a" (syntax-e #'L)))
+       #'(begin
+          (define (L? p)
+            (send (new L%) ? p))
+          (define (L*? p)
+            (parameterize ([compiler-psuedo-x86? #t])
+              (L? p)))
+          (define (interp-L p)
+            (send (new L%) interp p))
+          (define (interp-L* p)
+            (parameterize ([compiler-psuedo-x86? #t])
+              (interp-L p)))
+          (define (format-L p)
+            (send (new L%) format p))))]))

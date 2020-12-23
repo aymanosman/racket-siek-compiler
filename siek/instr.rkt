@@ -3,7 +3,7 @@
 (provide instr->reads
          instr->writes)
 
-(require "match-instr.rkt"
+(require (only-in "match-instr.rkt" arg)
          "raise-mismatch-error.rkt")
 
 (define (instr->reads i)

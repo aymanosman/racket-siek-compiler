@@ -2,8 +2,8 @@
 
 (provide current-system-type
          current-mismatch-handler
-         current-x86
          current-type-errors
+         compiler-psuedo-x86?
          compiler-enable-move-biasing?)
 
 ;; TODO rename to compiler-system-type
@@ -20,9 +20,8 @@
                             "term"
                             term))))
 
-(define current-x86 ;; TODO rename x860
-  ;; TODO guard (one of 'x860 'x860*)
-  (make-parameter 'x860))
+(define compiler-psuedo-x86?
+  (make-parameter #f))
 
 (define compiler-enable-move-biasing?
   (make-parameter #t))
