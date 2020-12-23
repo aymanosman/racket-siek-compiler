@@ -3,11 +3,11 @@
 (provide interp-R1-tests)
 
 (require siek
-         "test-interpreter.rkt")
+         "test-interp.rkt")
 
 (define interp-R1-tests
-  (test-interpreter
-   interp-R1
+  (test-interp
+   R1
    [(let ([x (read)])
       (+ x 2))
     <=

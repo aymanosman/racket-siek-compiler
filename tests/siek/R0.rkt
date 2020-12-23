@@ -3,11 +3,11 @@
 (provide interp-R0-tests)
 
 (require siek
-         "test-interpreter.rkt")
+         "test-interp.rkt")
 
 (define interp-R0-tests
-  (test-interpreter
-   interp-R0
+  (test-interp
+   R0
    2
    (- 3)
    (+ (- 3) 2)

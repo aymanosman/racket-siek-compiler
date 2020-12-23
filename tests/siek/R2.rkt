@@ -1,13 +1,16 @@
 #lang racket
 
-(provide interp-R2-tests)
+(provide interp-R2-tests
+         typecheck-R2-tests)
 
 (require siek
-         "test-interpreter.rkt")
+         rackunit
+         "test-interp.rkt"
+         "test-typecheck.rkt")
 
 (define interp-R2-tests
-  (test-interpreter
-   interp-R2
+  (test-interp
+   R2
    (- 5 3)
    #t
    #f
@@ -36,3 +39,9 @@
    [(+ 1 (+ (read) 100)) <= "8"]
    [(+ 1 (+ (read) 100)) <= "8"]
    [(+ (read) (read)) <= "1 2"]))
+
+(define typecheck-R2-tests
+  (test-typecheck-fail
+   R2
+   (not 1)
+   (+ 42 #f)))

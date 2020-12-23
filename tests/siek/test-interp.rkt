@@ -1,14 +1,16 @@
 #lang racket
 
-(provide test-interpreter)
+(provide test-interp)
 
-(require rackunit)
+(require rackunit
+         (for-syntax racket/syntax))
 
-(define-syntax (test-interpreter stx)
+(define-syntax (test-interp stx)
   (syntax-case stx (<=)
-    [(_ interp-L clause* ...)
-     (let ([clause* (map (clause #'interp-L) (syntax->list #'(clause* ...)))])
-       #`(test-suite (symbol->string 'interp-L) #,@clause*))]))
+    [(_ L clause* ...)
+     (with-syntax ([interp-L (format-id #'L "interp-~a" (syntax-e #'L))])
+       (let ([clause* (map (clause #'interp-L) (syntax->list #'(clause* ...)))])
+         #`(test-suite (symbol->string 'interp-L) #,@clause*)))]))
 
 (define-for-syntax ((clause interp-L-stx) stx)
   (syntax-case stx (<=)

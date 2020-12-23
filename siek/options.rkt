@@ -3,6 +3,7 @@
 (provide current-system-type
          current-mismatch-handler
          current-x86
+         current-type-errors
          compiler-enable-move-biasing?)
 
 ;; TODO rename to compiler-system-type
@@ -25,3 +26,6 @@
 
 (define compiler-enable-move-biasing?
   (make-parameter #t))
+
+(define current-type-errors
+  (make-parameter #f))

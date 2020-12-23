@@ -2,7 +2,8 @@
 
 (provide R1%
          R1?
-         interp-R1)
+         interp-R1
+         typecheck-R1)
 
 (require "R0.rkt")
 
@@ -15,12 +16,20 @@
 (define (interp-R1 p)
   (send (new R1%) interp p))
 
+(define (typecheck-R1 p)
+  (send (new R1%) typecheck p))
+
 (define R1%
   (class R0%
     (super-new)
 
+    (inherit expect-type)
+
     (define/override (who-interp)
       'interp-R1)
+
+    (define/override (who-typecheck)
+      'typecheck-R1)
 
     (define/override (exp? v)
       (match v
@@ -37,8 +46,17 @@
          ((interp-exp (dict-set env x ((interp-exp env) e0)))
           e1)]
         [_
-         ((super interp-exp env) e)]))))
+         ((super interp-exp env) e)]))
 
+    (define/override ((typecheck-exp env) e)
+      (match e
+        [(? symbol? x)
+         (dict-ref env x)]
+        [`(let ([,x ,e0]) ,e1)
+         ((typecheck-exp (dict-set env x (expect-type env e0 'Integer)))
+          e1)]
+        [_
+         ((super typecheck-exp env) e)]))))
 
 ;; TODO
 

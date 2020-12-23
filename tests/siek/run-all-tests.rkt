@@ -38,6 +38,7 @@
              remove-complex-opera*-tests
              uniquify-tests
              interp-x860-tests
+             typecheck-R2-tests
              interp-R2-tests
              interp-R1-tests
              interp-R0-tests))
