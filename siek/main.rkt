@@ -13,7 +13,6 @@
 (provide/require "x860.rkt")
 
 (provide/require "interp-C0.rkt")
-(provide/require "interp-x860.rkt")
 
 (provide/require "define-compiler.rkt")
 

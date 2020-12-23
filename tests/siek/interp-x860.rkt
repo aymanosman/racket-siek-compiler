@@ -2,7 +2,8 @@
 
 (provide interp-x860-tests)
 
-(require rackunit
+(require (for-syntax syntax/parse)
+         rackunit
          siek)
 
 (define-test-suite interp-x860-tests
@@ -40,6 +41,15 @@
     (movq (deref rsp -8) (reg rax))
     (jmp conclusion)))
 
+  (test-x860
+   "(assign x (read)) (return (+ 1 x))"
+   #:input "11"
+   12
+   (start
+    (callq read_int)
+    (addq (int 1) (reg rax))
+    (jmp conclusion)))
+
   (check-exn
    #rx"interp-x860: failed to match\n  kind: 'l-value\n  term: '\\(var x\\)"
    (thunk
@@ -54,10 +64,21 @@
 (define-check (check-x860 cfg result)
   (check-equal? (interp-x860 `(program () ,cfg)) result))
 
-(define-syntax-rule (test-x860 name result stanza* ...)
-  (test-case name
-    (check-x860 (stanza*->cfg '(stanza* ...))
-                result)))
+(define-syntax (test-x860 stx)
+  (syntax-parse stx
+    [(_ name
+        (~optional (~seq #:input input:str))
+        result
+        stanza* ...)
+     (with-syntax ([body #'(check-x860 (stanza*->cfg '(stanza* ...))
+                                       result)])
+       #'(test-case name
+           (~? (with-input input body)
+               body)))]))
+
+(define-syntax-rule (with-input input body ...)
+  (parameterize ([current-input-port (open-input-string input)])
+    body ...))
 
 (define (stanza*->cfg block*)
   (map stanza->block block*))
