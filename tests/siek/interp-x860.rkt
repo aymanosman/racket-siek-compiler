@@ -2,9 +2,8 @@
 
 (provide interp-x860-tests)
 
-(require rackunit)
-
-(require siek)
+(require rackunit
+         siek)
 
 (define-test-suite interp-x860-tests
   (test-case "(return 42)"
@@ -52,16 +51,15 @@
                        (addq (int 52) (deref rsp -8))
                        (movq (deref rsp -8) (reg rax))
                        (jmp conclusion))))))
-     42)))
+     42))
 
-;; TODO why is this broken?
-#;
-(check-exn #rx"interp-x860: failed to match\n  kind: 'l-value\n  term: '(var x)"
-           (thunk
-            (interp-x860
-             '(program
-               ((stack-space . 0))
-               ((start .
-                       (block ()
-                              (movq (int 10) (var x))
-                              (jmp conclusion))))))))
+  (check-exn
+   #rx"interp-x860: failed to match\n  kind: 'l-value\n  term: '\\(var x\\)"
+   (thunk
+    (interp-x860
+     '(program
+       ()
+       ((start .
+               (block ((stack-space . 0))
+                      (movq (int 10) (var x))
+                      (jmp conclusion)))))))))
