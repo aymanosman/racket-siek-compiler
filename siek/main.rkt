@@ -21,6 +21,7 @@
 (provide/require "typecheck-R1.rkt")
 (provide/require "typecheck-R2.rkt")
 (provide/require "uniquify-pass-R1.rkt")
+(provide/require "uniquify-R2.rkt")
 (provide/require "remove-complex-opera-pass-R1.rkt")
 (provide/require "explicate-control-pass-R1.rkt")
 (provide/require "uncover-locals-pass-R1.rkt")
