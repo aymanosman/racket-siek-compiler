@@ -32,3 +32,9 @@
 (provide/require "uncover-live-pass-R1.rkt")
 (provide/require "build-interference-pass-R1.rkt")
 (provide/require "allocate-registers-pass-R1.rkt")
+
+(require racket/runtime-path)
+
+(define-runtime-path runtime.c "runtime.c")
+
+(provide runtime.c)
