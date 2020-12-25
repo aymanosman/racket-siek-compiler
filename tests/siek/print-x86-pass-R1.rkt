@@ -12,8 +12,8 @@
             select-instructions-pass-R1
             uncover-locals-pass-R1
             explicate-control-pass-R1
-            remove-complex-opera*-pass-R1
-            uniquify-pass-R1))
+            normalize-R1
+            uniquify-R1))
 
 (define-x86-test-suite print-x86-tests compile
                        2

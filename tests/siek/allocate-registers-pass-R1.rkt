@@ -9,8 +9,8 @@
          siek/gensym)
 
 (define-compiler compile
-                 (uniquify-pass-R1
-                  remove-complex-opera*-pass-R1
+                 (uniquify-R1
+                  normalize-R1
                   explicate-control-pass-R1
                   uncover-locals-pass-R1
                   select-instructions-pass-R1
@@ -44,8 +44,8 @@
 
 (define (flaky-test #:fail? [fail? #f])
   (define-compiler compile
-                   (uniquify-pass-R1
-                    remove-complex-opera*-pass-R1
+                   (uniquify-R1
+                    normalize-R1
                     explicate-control-pass-R1
                     uncover-locals-pass-R1
                     select-instructions-pass-R1

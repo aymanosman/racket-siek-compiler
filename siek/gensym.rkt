@@ -1,7 +1,11 @@
 #lang racket
 
-(provide current-gensym
+(provide fresh
+         current-gensym
          make-gensym)
+
+(define (fresh [x 'tmp])
+  ((current-gensym) x))
 
 (define (make-gensym [n 1])
   (lambda ([x 'tmp])

@@ -22,8 +22,8 @@
             select-instructions-pass-R1
             uncover-locals-pass-R1
             explicate-control-pass-R1
-            remove-complex-opera*-pass-R1
-            uniquify-pass-R1))
+            normalize-R1
+            uniquify-R1))
 
 (define compile/R1/chapter3
   (compose1 print-x86-pass-R1
@@ -34,8 +34,8 @@
             select-instructions-pass-R1
             uncover-locals-pass-R1
             explicate-control-pass-R1
-            remove-complex-opera*-pass-R1
-            uniquify-pass-R1))
+            normalize-R1
+            uniquify-R1))
 
 (module+ main
   (require racket/cmdline)

@@ -2,7 +2,6 @@
 
 (require rackunit
          rackunit/text-ui
-         "x860.rkt"
          "print-x86-pass-R1.rkt"
          "patch-instructions-pass-R1.rkt"
          "allocate-registers-pass-R1.rkt"
@@ -14,10 +13,11 @@
          "select-instructions-pass-R1.rkt"
          "uncover-live-pass-R1.rkt"
          "explicate-control-pass-R1.rkt"
-         "remove-complex-opera-pass-R1.rkt"
-         "uniquify-pass-R1.rkt"
+         "normalize.rkt"
+         "uniquify.rkt"
          "interp-x861.rkt"
          "interp-x860.rkt"
+         "x860.rkt"
          "C1.rkt"
          "C0.rkt"
          "R2.rkt"
@@ -26,7 +26,6 @@
 
 (run-tests
  (test-suite "all-tests"
-             x860-tests
              print-x86-tests
              patch-instructions-tests
              allocate-registers-tests
@@ -38,10 +37,13 @@
              select-instructions-tests
              uncover-locals-tests
              explicate-control-tests
-             remove-complex-opera*-tests
-             uniquify-tests
+             normalize-R2-tests
+             normalize-R1-tests
+             uniquify-R2-tests
+             uniquify-R1-tests
              interp-x861-tests
              interp-x860-tests
+             x860-tests
              interp-C0-tests
              interp-C1-tests
              typecheck-R2-tests

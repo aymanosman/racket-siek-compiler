@@ -1,7 +1,8 @@
 #lang racket
 
 (provide R2%
-         interp-R2)
+         interp-R2
+         cmp?)
 
 (require "R1.rkt"
          "raise-mismatch-error.rkt")
@@ -84,3 +85,6 @@
 
 (define (or-fn a b)
   (or a b))
+
+(define (cmp? v)
+  (member v '(eq? < <= > >=)))

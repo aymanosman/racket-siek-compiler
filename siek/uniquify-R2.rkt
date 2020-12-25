@@ -2,15 +2,8 @@
 
 (provide uniquify-R2)
 
-(require "gensym.rkt"
-         "uniquify-pass-R1.rkt")
-
-;; bool := #t | #f
-;; cmp := eq? | < | <= | > | >=
-;; exp := ...
-;;      | (- e e)
-;;      | bool | (and e e) | (or e e) | (not e)
-;;      | (cmp e e) | (if e e e)
+(require "R2.rkt"
+         "uniquify-R1.rkt")
 
 (define (uniquify-R2 p)
   (send (new uniquify-R2%) uniquify p))
@@ -43,6 +36,3 @@
          `(if ,(recur e0) ,(recur e1) ,(recur e2))]
         [_
          ((super uniquify-exp env) e)]))))
-
-(define (cmp? v)
-  (member v '(eq? < <= > >=)))

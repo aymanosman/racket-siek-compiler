@@ -1,6 +1,7 @@
 #lang racket
 
 (provide check-pass
+         (rename-out [check-pass* test-compiler])
          check-pass*)
 
 (require rackunit

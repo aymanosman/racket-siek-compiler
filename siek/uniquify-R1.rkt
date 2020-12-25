@@ -1,12 +1,12 @@
 #lang racket
 
 (provide uniquify-R1%
-         uniquify-pass-R1)
+         uniquify-R1)
 
 (require "gensym.rkt"
          "raise-mismatch-error.rkt")
 
-(define (uniquify-pass-R1 p)
+(define (uniquify-R1 p)
   (send (new uniquify-R1%) uniquify p))
 
 (define uniquify-R1%
