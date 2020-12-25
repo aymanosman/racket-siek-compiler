@@ -17,6 +17,9 @@
 
 (provide/require "define-compiler.rkt")
 
+(provide/require "typecheck-R0.rkt")
+(provide/require "typecheck-R1.rkt")
+(provide/require "typecheck-R2.rkt")
 (provide/require "uniquify-pass-R1.rkt")
 (provide/require "remove-complex-opera-pass-R1.rkt")
 (provide/require "explicate-control-pass-R1.rkt")

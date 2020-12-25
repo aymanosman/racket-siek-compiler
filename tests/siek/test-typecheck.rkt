@@ -18,7 +18,7 @@
   (with-syntax ([typecheck-L typecheck-L-stx]
                 [exp exp-stx])
     #'(test-case (format "~a" 'exp)
-        (check-exn
-         #rx"type mismatch"
-         (thunk
-          (typecheck-L `(program () ,'exp)))))))
+        (match (typecheck-L `(program () ,'exp))
+          [`(program ,info ,_)
+           (unless (dict-ref info 'type-errors #f)
+             (fail-check))]))))
