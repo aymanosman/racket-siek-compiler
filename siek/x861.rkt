@@ -25,7 +25,7 @@
   (class x860%
     (super-new)
 
-    (define/override (who-interp)
+    (define/override (who)
       (if (compiler-psuedo-x86?)
           'interp-x861*
           'interp-x861))

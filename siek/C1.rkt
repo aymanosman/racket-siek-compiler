@@ -22,7 +22,7 @@
   (class C0%
     (super-new)
 
-    (define/override (who-interp)
+    (define/override (who)
       'interp-C1)
 
     (define/override (interp-tail code env t)

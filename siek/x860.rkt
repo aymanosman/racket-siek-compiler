@@ -71,7 +71,7 @@
     (define/public (register? r)
       (and (member r '(rsp rbp rax rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 r13 r14 r15)) #t))
 
-    (define/public (who-interp)
+    (define/public (who)
       (if (compiler-psuedo-x86?)
           'interp-x860*
           'interp-x860))
@@ -80,7 +80,7 @@
       (dict-ref (interp/env p)
                 'rax
                 (lambda ()
-                  (raise-arguments-error (who-interp) "invalid rax"))))
+                  (raise-arguments-error (who) "invalid rax"))))
 
     (define/public (interp/env p)
       (match p
@@ -118,14 +118,14 @@
                          (0 . dyld_stub_binder))
                        (dict-ref code 'main))]
         [_
-         (raise-mismatch-error (who-interp) 'top p)]))
+         (raise-mismatch-error (who) 'top p)]))
 
     (define/public (interp-block code env b)
       (match b
         [`(block ,_ ,instr* ...)
          (interp-instr* code env instr*)]
         [_
-         (raise-mismatch-error (who-interp) 'block b)]))
+         (raise-mismatch-error (who) 'block b)]))
 
     (define/public (interp-instr* code env i*)
       (match i*
@@ -176,12 +176,12 @@
            [(read_int)
             (dict-set env 'rax (read))]
            [else
-            (raise-arguments-error (who-interp)
+            (raise-arguments-error (who)
                                    "undefined builtin"
                                    "label"
                                    l)])]
         [_
-         (raise-mismatch-error (who-interp) 'instr i)]))
+         (raise-mismatch-error (who) 'instr i)]))
 
     (define/public (builtin? l)
       (and (member l '(read_int)) #t))
@@ -195,7 +195,7 @@
          (compiler-psuedo-x86?)
          v]
         [_
-         (raise-mismatch-error (who-interp) 'l-value a)]))
+         (raise-mismatch-error (who) 'l-value a)]))
 
     (define/public (r-value env a)
       (match a
@@ -208,7 +208,7 @@
          (var? v)
          (dict-ref env v)]
         [_
-         (raise-mismatch-error (who-interp) 'r-value a)]))
+         (raise-mismatch-error (who) 'r-value a)]))
 
     (define/public (format p)
       (match p

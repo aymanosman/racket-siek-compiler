@@ -17,6 +17,10 @@
       [`(,op ,(arg a0) ,(arg a1))
        (add-vertex! g a0)
        (add-vertex! g a1)]
+      [`(jmp ,_)
+       ;; FIXME
+       (add-vertex! g 'rax)
+       (add-vertex! g 'rsp)]
       [_ (void)]))
 
   g)

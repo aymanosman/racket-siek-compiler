@@ -1,6 +1,7 @@
 #lang racket
 
-(provide print-x86-pass-R1)
+(provide print-x86-pass-R1
+         (rename-out [print-x86-pass-R1 print-x86]))
 
 (require "options.rkt"
          "raise-mismatch-error.rkt")

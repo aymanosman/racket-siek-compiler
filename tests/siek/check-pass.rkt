@@ -15,11 +15,11 @@
     #:literals
     (->)
     [(_ pass (L0:id -> L1:id) e)
-     (with-syntax ([interp-L0 (format-id #'here "interp-~a" (syntax-e #'L0))]
+     (with-syntax ([interp-L0 (format-id #'here "interp-~a" (syntax-e #'L0))] ;; TODO #'here -> #'L0
                    [interp-L1 (format-id #'here "interp-~a" (syntax-e #'L1))])
        #'(test-case
           (format "~a" 'e)
-          (check-pass-fun pass interp-L0 interp-L1 e)))]))
+          (check-pass-fun pass interp-L0 interp-L1 'e)))]))
 
 (define-syntax (check-pass* stx)
   (syntax-parse stx
@@ -34,6 +34,12 @@
 
 (define-check (check-pass-fun pass interp-L0 interp-L1 e)
   (define p `(program () ,e))
-  (unless (equal? (interp-L1 (pass p))
-                  (interp-L0 p))
-    (fail-check)))
+  (define capture-output (open-output-string))
+  (define actual (parameterize ([current-output-port capture-output])
+                    (interp-L1 (pass p))))
+  (define expected (interp-L0 p))
+  (unless (equal? actual expected)
+    (with-check-info (['actual actual]
+                      ['expected expected]
+                      ['passes (unquoted-printing-string (get-output-string capture-output))])
+      (fail-check))))

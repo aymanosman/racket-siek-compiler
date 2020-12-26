@@ -28,7 +28,7 @@
         [(? fixnum?) e]
         [`(read) e]
         [`(- ,e)
-         (normalize-arg '- e)]
+         (normalize-op '- e)]
         [`(+ ,e0 ,e1)
          (normalize-op '+ e0 e1)]
         [(? symbol?) e]
@@ -45,9 +45,9 @@
          (define-values (x env) (normalize-arg e))
          (add-lets env `(,op ,x))]
         [(op e0 e1)
-         (define-values (v0 env0) (normalize-arg e0))
-         (define-values (v1 env1) (normalize-arg e1))
-         (add-lets (append env1 env0) `(,op ,v0 ,v1))]))
+         (define-values (x0 env0) (normalize-arg e0))
+         (define-values (x1 env1) (normalize-arg e1))
+         (add-lets (append env1 env0) `(,op ,x0 ,x1))]))
 
     (define/public (normalize-arg e)
       (match e

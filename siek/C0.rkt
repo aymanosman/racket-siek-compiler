@@ -18,7 +18,7 @@
   (class object%
     (super-new)
 
-    (define/public (who-interp)
+    (define/public (who)
       'interp-C0)
 
     (define/public (interp p)
@@ -27,20 +27,20 @@
          (define tail (dict-ref code 'start))
          (interp-tail code '() tail)]
         [_
-         (raise-mismatch-error (who-interp) 'top p)]))
+         (raise-mismatch-error (who) 'top p)]))
 
     (define/public (interp-tail code env t)
       (match t
         [`(return ,e) (interp-exp env e)]
         [`(seq ,s ,t) (interp-tail code (interp-stmt env s) t)]
         [_
-         (raise-mismatch-error (who-interp) 'tail t)]))
+         (raise-mismatch-error (who) 'tail t)]))
 
     (define/public (interp-stmt env s)
       (match s
         [`(assign ,v ,e) (dict-set env v (interp-exp env e))]
         [_
-         (raise-mismatch-error (who-interp) 'stmt s)]))
+         (raise-mismatch-error (who) 'stmt s)]))
 
     (define/public (interp-exp env e)
       (match e
@@ -58,9 +58,9 @@
          (match (read)
            [(? fixnum? r) r]
            [other
-            (raise-argument-error (who-interp) "fixnum?" other)])]
+            (raise-argument-error (who) "fixnum?" other)])]
         [_
-         (raise-mismatch-error (who-interp) 'exp e)]))
+         (raise-mismatch-error (who) 'exp e)]))
 
     (define/public (atom? a)
       (match a

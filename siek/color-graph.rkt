@@ -11,7 +11,7 @@
   (define nodes
     (for/hash ([v (get-vertices conflict-graph)]
                #:when
-               (not (member v registers)))
+               (not (register? v)))
       (define n (node v (mutable-set)))
       (heap-add! q n)
       (values v n)))
@@ -33,7 +33,8 @@
        (loop)]))
   colors)
 
-(define registers '(rax))
+(define (register? r)
+  (and (member r '(rsp rbp rax rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 r13 r14 r15 ah al bh bl ch cl dh dl))))
 
 (define (choose-color colors conflicts move-related)
   (or (and move-related (move-color colors conflicts move-related))
@@ -67,9 +68,6 @@
 
 (define (node-sat-add! n c)
   (set-add! (node-sat n) c))
-
-(define (node=? x y)
-  (= (- (node-saturation x)) (- (node-saturation y))))
 
 (define (node<=? x y)
   (<= (- (node-saturation x)) (- (node-saturation y))))

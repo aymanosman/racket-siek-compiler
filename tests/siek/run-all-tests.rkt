@@ -11,7 +11,6 @@
          "uncover-locals-pass-R1.rkt"
          "assign-homes-pass-R1.rkt"
          "select-instructions-pass-R1.rkt"
-         "uncover-live-pass-R1.rkt"
          "explicate-control-pass-R1.rkt"
          "normalize.rkt"
          "uniquify.rkt"
@@ -32,7 +31,6 @@
              move-related-tests
              color-graph-tests
              build-interference-tests
-             uncover-live-tests
              assign-homes-tests
              select-instructions-tests
              uncover-locals-tests

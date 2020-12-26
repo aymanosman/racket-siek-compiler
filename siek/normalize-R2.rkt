@@ -33,6 +33,10 @@
         [`(,c ,e0 ,e1)
          #:when (cmp? c)
          (normalize-op c e0 e1)]
+        [`(if ,e0 ,e1 ,e2)
+         `(if ,(normalize-exp e0)
+              ,(normalize-exp e1)
+              ,(normalize-exp e2))]
         [_
          (super normalize-exp e)]))
 

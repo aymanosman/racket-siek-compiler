@@ -12,7 +12,7 @@
 
 (define-compiler-test-suite normalize-R1-tests
   #:compiler compile-R1
-  #:signature (R1 -> R1)
+  #:signature (R1 -> R1†)
   2
   (let ([x 32])
     (+ x 10))
@@ -24,7 +24,12 @@
   (uniquify-R2
    normalize-R2))
 
+(compiler-trace! compile-R2 #t)
+
 (define-extended-compiler-test-suite normalize-R2-tests normalize-R1-tests
   #:compiler compile-R2
-  #:signature (R2 -> R2) ;; R2†
-  (not (< 1 2)))
+  #:signature (R2 -> R2†)
+  (not (< 1 2))
+  (if (if (< 1 2) #t #f)
+      12
+      13))

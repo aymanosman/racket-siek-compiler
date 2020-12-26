@@ -5,15 +5,16 @@
 (require siek
          "define-x86-test-suite.rkt")
 
-(define compile
-  (compose1 print-x86-pass-R1
-            patch-instructions-pass-R1
-            assign-homes-pass-R1
-            select-instructions-pass-R1
-            uncover-locals-pass-R1
-            explicate-control-pass-R1
-            normalize-R1
-            uniquify-R1))
+(define-compiler compile
+  (uniquify-R1
+   normalize-R1
+   explicate-control-pass-R1
+   uncover-locals-pass-R1
+   select-instructions-pass-R1
+   assign-homes-pass-R1
+   patch-instructions-pass-R1))
+
+(compiler-trace! compile #t)
 
 (define-x86-test-suite print-x86-tests compile
                        2

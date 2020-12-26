@@ -1,7 +1,9 @@
 #lang racket
 
 (provide R2%
+         R2†%
          interp-R2
+         interp-R2†
          cmp?)
 
 (require "R1.rkt"
@@ -21,7 +23,7 @@
   (class R1%
     (super-new)
 
-    (define/override (who-interp)
+    (define/override (who)
       'interp-R2)
 
     (define/override ((interp-exp env) e)
@@ -34,7 +36,7 @@
            [#t ((interp-exp env) then)]
            [#f ((interp-exp env) else)]
            [_
-            (raise-mismatch-error (who-interp) 'exp cond)])]
+            (raise-mismatch-error (who) 'exp cond)])]
         [`(and ,e0 ,e1)
          (match ((interp-exp env) e0)
            [#t ((interp-exp env) e1)]
@@ -88,3 +90,51 @@
 
 (define (cmp? v)
   (member v '(eq? < <= > >=)))
+
+;; exp := ...
+;;      | (not a)
+;;      | (cmp a a)
+;;      | (if e e e)
+;; atom := ... | bool
+
+(define (interp-R2† p)
+  (send (new R2†%) interp p))
+
+(define R2†%
+  (class R1†%
+    (super-new)
+
+    (define/override (who)
+      'interp-R2†)
+
+    (define/override ((interp-exp env) e)
+      (match e
+        [`(not ,a)
+         (not ((interp-atom env) a))]
+        [`(,c ,a0 ,a1)
+         #:when (cmp? c)
+         (define op
+           (case c
+             [(eq?) =]
+             [(<) <]
+             [else (error (who) "todo op")]))
+         (op ((interp-atom env) a0)
+             ((interp-atom env) a1))]
+        [`(if ,e0 ,e1 ,e2)
+         (match ((interp-exp env) e0)
+           [#t ((interp-exp env) e1)]
+           [#f ((interp-exp env) e2)])]
+        [_
+         ((super interp-exp env) e)]))
+
+    (define/override ((interp-atom env) a)
+      (match a
+        [(? boolean?) a]
+        [_
+         ((super interp-atom env) a)]))
+
+    (define/override (atom? a)
+      (match a
+        [(? boolean?) #t]
+        [_
+         (super atom? a)]))))

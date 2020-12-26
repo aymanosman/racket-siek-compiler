@@ -17,6 +17,10 @@
 (define (define-compiler-proc pass*)
   (compiler
    (lambda (program #:trace? trace?)
+     (when trace?
+       (printf "=== input ===\n")
+       (parameterize ([pretty-print-depth #f])
+         (pretty-print program)))
      (for/fold ([prog program])
                ([pass pass*])
        (define out (pass prog))

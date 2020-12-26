@@ -15,26 +15,31 @@
   (syntax-rules (<=)
     [(_ compile [e <= input])
      (test-case (format "~a" 'e)
-       (check-equal?
-        (main-fun compile 'e input)
-        (cond
-          [input
-           (parameterize ([current-input-port (open-input-string input)])
-             e)]
-          [else e])))]
+       (main-fun compile
+                 'e
+                 (cond
+                   [input
+                    (parameterize ([current-input-port (open-input-string input)])
+                      e)]
+                   [else e])
+                 input))]
     [(_ compile e)
      (main compile [e <= #f])]))
 
 (define dir (make-temporary-file "siek-compiler-~a" 'directory))
 
-(define (main-fun compile expr [input #f])
+(define (main-fun compile expr expected [input #f])
   (parameterize ([current-directory dir])
     (define stst (make-temporary-file "stst-~a" #f (current-directory)))
     (define stst.s (path-add-extension stst #".s"))
     (define stst.in (path-add-extension stst #".in"))
+    (define trace-out (open-output-string))
+    (define asm
+      (parameterize ([current-output-port trace-out])
+        (compile `(program () ,expr))))
     (with-output-to-file stst.s
       (thunk
-       (compile `(program () ,expr))))
+       (print-x86 asm)))
     (gcc "-g" "-o" stst stst.s runtime.c)
     (when input
       (with-output-to-file stst.in
@@ -42,8 +47,15 @@
          (display input))))
 
     (if input
-        (run-with-input stst.in stst)
-        (system*/exit-code stst))))
+        (check-run (run-with-input stst.in stst) expected trace-out)
+        (check-run (system*/exit-code stst) expected trace-out))))
+
+(define (check-run actual expected trace-out)
+  (unless (equal? actual expected)
+    (with-check-info (['actual actual]
+                      ['expected expected]
+                      ['trace (unquoted-printing-string (get-output-string trace-out))])
+      (fail-check))))
 
 (define (run-with-input stst.in stst)
   (match-define (list in out pid err control) (process (format "cat ~a | ~a" stst.in stst)))
@@ -58,8 +70,7 @@
        [(string=? "" err-string)
         (control 'exit-code)]
        [else
-        (with-check-info (['stderr err-string])
-          (fail-check))])]
+        (unquoted-printing-string err-string)])]
     [else
      (error 'run-with-input "should never get here")]))
 

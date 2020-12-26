@@ -5,8 +5,7 @@
 (require rackunit
          "check-pass.rkt")
 
-(require siek
-         siek/gensym)
+(require siek)
 
 (define-compiler compile
                  (uniquify-R1
@@ -22,17 +21,16 @@
 ;; (compiler-trace! compile #t)
 
 (define-test-suite allocate-registers-tests
-  ;; TODO rename check-pass* test-compiler
-  (check-pass* compile
-               (R1 -> x860)
-               2
-               (- 10)
-               (- (+ 10 20))
-               (let ([x 32])
-                 (+ x 10))
-               (let ([x (let ([x 4])
-                          (+ x 1))])
-                 (+ x 2)))
+  (test-compiler compile
+                 (R1 -> x860)
+                 2
+                 (- 10)
+                 (- (+ 10 20))
+                 (let ([x 32])
+                   (+ x 10))
+                 (let ([x (let ([x 4])
+                            (+ x 1))])
+                   (+ x 2)))
   (case (system-type 'vm)
     [(racket)
      (test-case "move biasing should reveal more redundant instructions"
