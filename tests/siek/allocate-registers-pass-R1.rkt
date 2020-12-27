@@ -31,6 +31,8 @@
                  (let ([x (let ([x 4])
                             (+ x 1))])
                    (+ x 2)))
+  ;; TODO disable flaky-test
+  #;
   (case (system-type 'vm)
     [(racket)
      (test-case "move biasing should reveal more redundant instructions"
@@ -59,29 +61,33 @@
             (let ([y x])
               (let ([z (+ x w)])
                 (+ z (- y)))))))))
-  (define-check (check-optimization prog)
-    (define orig
-      (parameterize ([compiler-enable-move-biasing? #f])
-        (compare-assembly-after-patch prog)))
-    (define opt
-      (parameterize ([compiler-enable-move-biasing? #t])
-        (compare-assembly-after-patch prog)))
-    (with-check-info (['original orig]
-                      ['optimized opt])
-                     (cond
-                       [fail? ;; expect to fail
-                        (unless (not (> opt orig))
-                          (fail-check))]
-                       [else
-                        (unless (> opt orig)
-                          (fail-check))])))
-  (define (compare-assembly-after-patch prog)
-    (define out (compile prog))
-    (- (num-instr out)
-       (num-instr (patch-instructions-pass-R1 out))))
-  (define num-instr
-    (lambda (p)
-      (match p
-        [`(program ,_ ((start . (block ,_ ,instr* ...))))
-         (length instr*)])))
-  (check-optimization prog))
+
+  (check-optimization fail? compile prog))
+
+(define-check (check-optimization fail? compile prog)
+  (define orig
+    (parameterize ([compiler-enable-move-biasing? #f])
+      (compare-assembly-after-patch (compile prog))))
+  (define opt
+    (parameterize ([compiler-enable-move-biasing? #t])
+      (compare-assembly-after-patch (compile prog))))
+
+  (with-check-info (['original orig]
+                    ['optimized opt])
+    (cond
+      [fail? ;; expect to fail
+       (unless (not (> opt orig))
+         (fail-check))]
+      [else
+       (unless (> opt orig)
+         (fail-check))])))
+
+(define (compare-assembly-after-patch asm)
+  (- (num-instr asm)
+     (num-instr (patch-instructions-pass-R1 asm))))
+
+(define num-instr
+  (lambda (p)
+    (match p
+      [`(program ,_ ((start . (block ,_ ,instr* ...))))
+       (length instr*)])))
