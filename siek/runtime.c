@@ -3,6 +3,6 @@
 
 int64_t read_int(){
     int64_t n;
-    scanf("%lld", &n);
+    scanf("%" PRId64, &n);
     return n;
 }
