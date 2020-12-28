@@ -6,10 +6,16 @@
 (require racket/fixnum
          "raise-mismatch-error.rkt")
 
-;; tail := (return e) |  (seq s t)
-;; stmt := (assign x e)
-;; exp  := a | (read) | (- a) | (+ a a)
-;; atom := int | var
+#;
+(define-language C0
+  (terminals
+   (fixnum? n)
+   (symbol? x))
+  (grammar
+   (tail t := (return e) (seq s t))
+   (stmt s := (assign x e))
+   (exp e := a (read) (- a) (+ a a))
+   (atom a := n x)))
 
 (define (interp-C0 p)
   (send (new C0%) interp p))
