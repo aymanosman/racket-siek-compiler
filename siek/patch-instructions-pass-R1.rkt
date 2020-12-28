@@ -2,6 +2,9 @@
 
 (provide patch-instructions-pass-R1)
 
+(module+ for-test
+  (provide patch-instructions-instr))
+
 (require "match-instr.rkt"
          "raise-mismatch-error.rkt")
 

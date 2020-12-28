@@ -32,6 +32,7 @@
 (provide/require "print-x86-pass-R1.rkt")
 (provide/require "uncover-live-pass-R1.rkt")
 (provide/require "build-interference-pass-R1.rkt")
+(provide/require "assign-colors-R1.rkt")
 (provide/require "allocate-registers-pass-R1.rkt")
 
 (require racket/runtime-path)

@@ -4,6 +4,7 @@
          rackunit/text-ui
          "print-x86-pass-R1.rkt"
          "patch-instructions-pass-R1.rkt"
+         "move-bias.rkt"
          "allocate-registers-pass-R1.rkt"
          "move-related.rkt"
          "color-graph.rkt"
@@ -27,6 +28,7 @@
  (test-suite "all-tests"
              print-x86-tests
              patch-instructions-tests
+             move-bias-tests
              allocate-registers-tests
              move-related-tests
              color-graph-tests

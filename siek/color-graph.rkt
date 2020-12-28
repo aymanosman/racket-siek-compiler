@@ -3,82 +3,108 @@
 (provide color-graph)
 
 (require graph
-         data/heap)
+         "color-node.rkt"
+         "heap.rkt")
 
-(define (color-graph conflict-graph move-graph)
-  (define colors (make-hash))
+(define-logger siek #:parent (current-logger))
+
+(define (color-graph conflict-graph move-graph #:order-for-test [order-for-test #f])
   (define q (make-heap node<=?))
+
   (define nodes
-    (for/hash ([v (get-vertices conflict-graph)]
-               #:when
-               (not (register? v)))
-      (define n (node v (mutable-set)))
+    (for/hash ([x (get-vertices conflict-graph)])
+      (define n (node x (mutable-set)))
       (heap-add! q n)
-      (values v n)))
+      (values x n)))
+
+  (define assigned (make-hash))
+
+  (define (update-neighbours x0 c)
+    (for ([x (in-neighbors conflict-graph x0)])
+      (define n (hash-ref nodes x))
+      (node-unavailable-add! n c)
+      (heap-notify! q n)))
+
+  (define (assign-color x c)
+    (when (hash-has-key? assigned x)
+      (raise-arguments-error 'color-graph "color already assigned to this variable"
+                             "variable" x))
+    (hash-set! assigned x c)
+    (update-neighbours x c))
+
+  (define (init-assigned)
+    (for ([(reg color) (in-hash #hash((rax . -1) (rsp . -2)))])
+      (assign-color reg color)
+      (heap-remove-eq! q (hash-ref nodes reg))))
+
+  (define (available-color n)
+    (for/first ([c (in-naturals)]
+                #:when
+                (not (set-member? (node-unavailable n) c)))
+      c))
+
+  (define (nodes-with-highest-and-equal-saturation)
+    (let loop ([acc (list (heap-pop! q))])
+      (cond
+        [(heap-empty? q)
+         (reverse acc)]
+        [else
+         (define n (heap-pop! q))
+         (if (node-saturation=? n (first acc))
+             (loop (cons n acc))
+             (begin
+               (heap-add! q n)
+               (reverse acc)))])))
+
+  (define (move-color n)
+    (for/first ([m (in-neighbors move-graph (node-name n))]
+                #:when
+                ;; TODO reject stack locations
+                (and (hash-has-key? assigned m)
+                     (not (set-member? (node-unavailable n) (hash-ref assigned m)))))
+      (hash-ref assigned m)))
+
+  (define (pick-candidate+color)
+    (define candidates (nodes-with-highest-and-equal-saturation))
+
+    (define move-related-colors
+      (and move-graph
+           (for/list ([n candidates]) (move-color n))))
+
+    (define (restore-unpicked picked)
+      (for ([n candidates] #:when (not (eq? n picked)))
+        (heap-add! q n)))
+
+    (match (for/first ([n candidates]
+                       [c (or move-related-colors empty)]
+                       #:when c)
+             (cons n c))
+      [(cons picked-node picked-color)
+       (restore-unpicked picked-node)
+       (values picked-node picked-color)]
+      ;; default to first node
+      [_
+       (define picked-node (first candidates))
+       (restore-unpicked picked-node)
+       (values picked-node #f)]))
+
+  (init-assigned)
   (let loop ()
     (cond
-      [(= 0 (heap-count q))
+      [(heap-empty? q)
        (void)]
       [else
-       (define n (heap-pop! q))
-       (define conflicts (list->set (get-neighbors conflict-graph (node-name n))))
-       (define move-related (and move-graph (list->set (get-neighbors move-graph (node-name n)))))
-       (define c (choose-color colors conflicts move-related))
-       (hash-set! colors (node-name n) c)
-       (for ([n (stream-map (lambda (v) (hash-ref nodes v #f)) conflicts)]
-             #:when
-             n)
-         (node-sat-add! n c)
-         (heap-notify! q n))
+       (define-values (n maybe-color)
+         (cond
+           [order-for-test
+            (define n (hash-ref nodes (first order-for-test)))
+            (heap-remove-eq! q n)
+            (begin0 (values n #f)
+              (set! order-for-test (rest order-for-test)))]
+           [else
+            (pick-candidate+color)]))
+       (define c (or maybe-color (available-color n)))
+       (log-siek-debug "(color-graph) assigned color ~v(~v) = ~v" (node-name n) maybe-color c)
+       (assign-color (node-name n) c)
        (loop)]))
-  colors)
-
-(define (register? r)
-  (and (member r '(rsp rbp rax rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 r13 r14 r15 ah al bh bl ch cl dh dl))))
-
-(define (choose-color colors conflicts move-related)
-  (or (and move-related (move-color colors conflicts move-related))
-      (available-color colors conflicts)))
-
-(define (move-color colors conflicts move-related)
-  (for/first ([m move-related]
-              #:when
-              (and (not (set-member? conflicts m))
-                   ;; TODO reject stack locations
-                   (hash-has-key? colors m)))
-             (hash-ref colors m #f)))
-
-(define (available-color colors conflicts)
-  (local-require threading)
-  (define assigns
-    (~> conflicts
-        (stream-map (lambda (v) (hash-ref colors v #f)) _)
-        (stream-filter identity _)
-        stream->list
-        (sort _ <=)))
-  (for/fold ([c 0])
-            ([d assigns]
-             #:break
-             (not (= c d)))
-    (add1 c)))
-
-;; Aux
-
-(struct node (name sat) #:transparent)
-
-(define (node-sat-add! n c)
-  (set-add! (node-sat n) c))
-
-(define (node<=? x y)
-  (<= (- (node-saturation x)) (- (node-saturation y))))
-
-(define (node-saturation x)
-  (set-count (node-sat x)))
-
-(define (heap-pop! q)
-  (begin0 (heap-min q)
-    (heap-remove-min! q)))
-
-(define (heap-notify! q n)
-  (and (heap-remove! q n)
-       (heap-add! q n)))
+  assigned)

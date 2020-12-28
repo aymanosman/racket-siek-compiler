@@ -3,8 +3,14 @@
 (provide current-system-type
          current-mismatch-handler
          current-type-errors
+         (rename-out [current-gensym current-compiler-gensym]
+                     [make-gensym make-compiler-gensym])
+         fresh
          compiler-psuedo-x86?
+         compiler-stack-location-index
          compiler-enable-move-biasing?)
+
+(require "gensym.rkt")
 
 ;; TODO rename to compiler-system-type
 (define current-system-type
@@ -20,11 +26,10 @@
                             "term"
                             term))))
 
-(define compiler-psuedo-x86?
-  (make-parameter #f))
+(define current-type-errors (make-parameter #f))
 
-(define compiler-enable-move-biasing?
-  (make-parameter #t))
+(define compiler-psuedo-x86? (make-parameter #f))
 
-(define current-type-errors
-  (make-parameter #f))
+(define compiler-enable-move-biasing? (make-parameter #t))
+
+(define compiler-stack-location-index (make-parameter 3))

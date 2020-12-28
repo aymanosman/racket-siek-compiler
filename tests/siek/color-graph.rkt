@@ -19,6 +19,10 @@
   (with-check-info (['coloring (unquoted-printing-string (graphviz g #:colors coloring))])
     (check-true (valid-coloring? g coloring))))
 
+(module+ test
+  (require rackunit/text-ui)
+  (run-tests color-graph-tests))
+
 (define-test-suite color-graph-tests
   (test-case "fully conflicted"
     (define instr*
@@ -42,10 +46,8 @@
     (define num-colors (length (remove-duplicates (dict-values coloring))))
 
     (check-valid-coloring conflict coloring)
-    (check-equal? num-colors 6))
+    (check-equal? num-colors 8))
 
-  ;; FIXME fix test
-  #;
   (test-case "running example"
     (define instr*
       '((movq (int 1) (var v))
@@ -68,7 +70,7 @@
     (define num-colors (length (remove-duplicates (dict-values coloring))))
 
     (check-valid-coloring conflict coloring)
-    (check-equal? num-colors 3))
+    (check-equal? num-colors 5))
 
   (test-case "other running example"
     (define instr*
@@ -92,4 +94,4 @@
     (define num-colors (length (remove-duplicates (dict-values coloring))))
 
     (check-valid-coloring conflict coloring)
-    (check-equal? num-colors 3)))
+    (check-equal? num-colors 5)))
