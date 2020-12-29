@@ -3,7 +3,6 @@
 (provide allocate-registers-pass-R1)
 
 (require "assign-homes.rkt"
-         "color-homes.rkt"
          "options.rkt")
 
 (define (allocate-registers-pass-R1 p)
