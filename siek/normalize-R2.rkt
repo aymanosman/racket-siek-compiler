@@ -13,7 +13,7 @@
   (class normalize-R1%
     (super-new)
 
-    (inherit normalize-op arg-op add-lets)
+    (inherit normalize-op arg-op)
 
     (define/override (who)
       'normalize-R2)

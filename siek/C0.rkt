@@ -30,8 +30,7 @@
     (define/public (interp p)
       (match p
         [`(program ,_ ,code)
-         (define tail (dict-ref code 'start))
-         (interp-tail code '() tail)]
+         (interp-tail code '() (dict-ref code 'start))]
         [_
          (raise-mismatch-error (who) 'top p)]))
 
@@ -50,8 +49,7 @@
 
     (define/public (interp-exp env e)
       (match e
-        [(? symbol?) (dict-ref env e)]
-        [(? fixnum?) e]
+        [(? atom?) (interp-atom env e)]
         [`(- ,a)
          #:when
          (atom? a)
@@ -67,6 +65,13 @@
             (raise-argument-error (who) "fixnum?" other)])]
         [_
          (raise-mismatch-error (who) 'exp e)]))
+
+    (define/public (interp-atom env a)
+      (match a
+        [(? fixnum?) a]
+        [(? symbol?) (dict-ref env a)]
+        [_
+         (raise-mismatch-error (who) 'atom a)]))
 
     (define/public (atom? a)
       (match a

@@ -3,7 +3,7 @@
 (provide allocate-registers-tests)
 
 (require rackunit
-         "check-pass.rkt")
+         "define-compiler-test-suite.rkt")
 
 (require siek)
 
@@ -25,14 +25,14 @@
 
 ;; (compiler-trace! compile #t)
 
-(define-test-suite allocate-registers-tests
-  (test-compiler compile
-                 (R1 -> x860)
-                 2
-                 (- 10)
-                 (- (+ 10 20))
-                 (let ([x 32])
-                   (+ x 10))
-                 (let ([x (let ([x 4])
-                            (+ x 1))])
-                   (+ x 2))))
+(define-compiler-test-suite allocate-registers-tests
+  #:compiler compile
+  #:signature (R1 -> x860)
+  2
+  (- 10)
+  (- (+ 10 20))
+  (let ([x 32])
+    (+ x 10))
+  (let ([x (let ([x 4])
+             (+ x 1))])
+    (+ x 2)))

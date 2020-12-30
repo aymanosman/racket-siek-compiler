@@ -8,7 +8,8 @@
          fresh
          compiler-psuedo-x86?
          compiler-stack-location-index
-         compiler-enable-move-biasing?)
+         compiler-enable-move-biasing?
+         compiler-raise-exception-on-type-error)
 
 (require "gensym.rkt")
 
@@ -33,3 +34,5 @@
 (define compiler-enable-move-biasing? (make-parameter #t))
 
 (define compiler-stack-location-index (make-parameter 3))
+
+(define compiler-raise-exception-on-type-error (make-parameter #t))

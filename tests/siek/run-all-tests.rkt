@@ -37,6 +37,7 @@
              select-instructions-tests
              uncover-locals-tests
              explicate-control-tests
+             explicate-control-R2-tests
              normalize-R2-tests
              normalize-R1-tests
              uniquify-R2-tests

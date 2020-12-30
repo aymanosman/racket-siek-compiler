@@ -14,7 +14,7 @@
    assign-homes-pass-R1
    patch-instructions-pass-R1))
 
-(compiler-trace! compile #t)
+;; (compiler-trace! compile #t)
 
 (define-x86-test-suite print-x86-tests compile
                        2

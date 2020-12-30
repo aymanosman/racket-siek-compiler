@@ -3,6 +3,7 @@
 (provide test-typecheck-fail)
 
 (require rackunit
+         siek/options
          (for-syntax racket/syntax))
 
 (define-syntax (test-typecheck-fail stx)
@@ -18,7 +19,8 @@
   (with-syntax ([typecheck-L typecheck-L-stx]
                 [exp exp-stx])
     #'(test-case (format "~a" 'exp)
-        (match (typecheck-L `(program () ,'exp))
+        (match (parameterize ([compiler-raise-exception-on-type-error #f])
+                 (typecheck-L `(program () ,'exp)))
           [`(program ,info ,_)
            (unless (dict-ref info 'type-errors #f)
              (fail-check))]))))

@@ -2,25 +2,27 @@
 
 (provide uncover-locals-tests)
 
-(require rackunit
-         "check-pass.rkt")
+(require siek
+         "define-compiler-test-suite.rkt")
 
-(require siek)
+(module+ test
+  (require rackunit/text-ui)
+  (run-tests uncover-locals-tests))
 
-(define compile
-  (compose1 uncover-locals-pass-R1
-            explicate-control-pass-R1
-            normalize-R1
-            uniquify-R1))
+(define-compiler compiler
+  (uniquify-R1
+   normalize-R1
+   explicate-control-pass-R1
+   uncover-locals-pass-R1))
 
-(define-test-suite uncover-locals-tests
-  (check-pass* compile
-               (R1 -> C0)
-               2
-               (- 10)
-               (- (+ 10 20))
-               (let ([x 32])
-                 (+ x 10))
-               (let ([x (let ([x 4])
-                          (+ x 1))])
-                 (+ x 2))))
+(define-compiler-test-suite uncover-locals-tests
+  #:compiler compiler
+  #:signature (R1 -> C0)
+  2
+  (- 10)
+  (- (+ 10 20))
+  (let ([x 32])
+    (+ x 10))
+  (let ([x (let ([x 4])
+             (+ x 1))])
+    (+ x 2)))

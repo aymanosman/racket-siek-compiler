@@ -3,7 +3,7 @@
 (provide select-instructions-tests)
 
 (require rackunit
-         "check-pass.rkt")
+         "define-compiler-test-suite.rkt")
 
 (require siek)
 
@@ -14,14 +14,14 @@
             normalize-R1
             uniquify-R1))
 
-(define-test-suite select-instructions-tests
-  (check-pass* compile
-               (R1 -> x860*)
-               2
-               (- 10)
-               (- (+ 10 20))
-               (let ([x 32])
-                 (+ x 10))
-               (let ([x (let ([x 4])
-                          (+ x 1))])
-                 (+ x 2))))
+(define-compiler-test-suite select-instructions-tests
+  #:compiler compile
+  #:signature (R1 -> x860*)
+  2
+  (- 10)
+  (- (+ 10 20))
+  (let ([x 32])
+    (+ x 10))
+  (let ([x (let ([x 4])
+             (+ x 1))])
+    (+ x 2)))

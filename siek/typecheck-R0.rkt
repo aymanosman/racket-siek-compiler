@@ -4,6 +4,7 @@
          typecheck-R0)
 
 (require racket/control
+         "raise-mismatch-error.rkt"
          "options.rkt")
 
 (define (typecheck-R0 p)
@@ -21,12 +22,15 @@
         [`(program ,info ,e)
          (define-values (errors type)
            (collect-type-errors
-            ((typecheck-exp '()) e)))
+            (expect-type=? ((typecheck-exp '()) e) 'Integer)))
          (define new-info
            (cond
              [(empty? errors)
               (dict-set info 'type type)]
              [else
+              (when (compiler-raise-exception-on-type-error)
+                (raise-arguments-error (who) "failed typecheck"
+                                       "type-errors" errors))
               (dict-set info 'type-errors errors)]))
          `(program ,new-info ,e)]
         [_

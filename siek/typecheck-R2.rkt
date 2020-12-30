@@ -96,8 +96,7 @@
         [`(-> ,I* ... ,O)
          (cond
            [(= (length I*) (length t*))
-            (for ([n (in-naturals 1)]
-                  [I I*]
+            (for ([I I*]
                   [t t*])
               (expect-type=? t I))
             O]

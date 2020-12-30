@@ -9,12 +9,17 @@
 (require "R1.rkt"
          "raise-mismatch-error.rkt")
 
-;; bool := #t | #f
-;; cmp := eq? | < | <= | > | >=
-;; exp := ...
-;;      | (- e e)
-;;      | bool | (and e e) | (or e e) | (not e)
-;;      | (cmp e e) | (if e e e)
+#;
+(define-language R2
+  (terminals
+   (boolean? b))
+  (grammar
+   (exp e := ...
+             (- e e)
+             b
+             (and e e) (or e e) (not e)
+             (c e e) (if e e e))
+   (cmp c := eq? < <= > >=)))
 
 (define (interp-R2 p)
   (send (new R2%) interp p))
@@ -89,13 +94,14 @@
   (or a b))
 
 (define (cmp? v)
-  (member v '(eq? < <= > >=)))
+  (member v '(eq? <)))
 
-;; exp := ...
-;;      | (not a)
-;;      | (cmp a a)
-;;      | (if e e e)
-;; atom := ... | bool
+#;
+(define-extended-language R2† R1†
+  (grammar
+   (exp e := ...
+             (not a) (c a a) (if e e e))
+   (atom a := ... b)))
 
 (define (interp-R2† p)
   (send (new R2†%) interp p))
@@ -109,6 +115,9 @@
 
     (define/override ((interp-exp env) e)
       (match e
+        [`(- ,a0 ,a1)
+         (- ((interp-atom env) a0)
+            ((interp-atom env) a1))]
         [`(not ,a)
          (not ((interp-atom env) a))]
         [`(,c ,a0 ,a1)
@@ -117,7 +126,7 @@
            (case c
              [(eq?) =]
              [(<) <]
-             [else (error (who) "todo op")]))
+             [else (raise-arguments-error (who) "impossible state")]))
          (op ((interp-atom env) a0)
              ((interp-atom env) a1))]
         [`(if ,e0 ,e1 ,e2)
