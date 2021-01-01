@@ -4,7 +4,7 @@
          interp-C1-tests)
 
 (require siek
-         "test-C.rkt")
+         "test-L.rkt")
 
 (module+ test
   (require rackunit/text-ui)
@@ -13,7 +13,7 @@
 
 (define-interp-test-suite interp-C0-tests
   #:interpreter interp-C0
-  
+
   (test
    #:expect 10
    (start
@@ -48,7 +48,7 @@
 
 (define-extended-interp-test-suite interp-C1-tests interp-C0-tests
   #:interpreter interp-C1
-  
+
   (test
    #:expect 42
    (start
