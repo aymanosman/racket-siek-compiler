@@ -13,7 +13,6 @@
   (run-tests build-interference-tests))
 
 (define-test-suite build-interference-tests
-
   #;
   (test-case "callq and caller-saved registers"
     (define instr*
