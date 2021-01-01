@@ -3,7 +3,7 @@
 (provide explicate-control-R2)
 
 (require "options.rkt"
-         "explicate-control-pass-R1.rkt"
+         "explicate-control-R1.rkt"
          "raise-mismatch-error.rkt")
 
 (define (explicate-control-R2 p)

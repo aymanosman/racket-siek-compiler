@@ -2,10 +2,8 @@
 
 (provide allocate-registers-tests)
 
-(require rackunit
+(require siek
          "define-compiler-test-suite.rkt")
-
-(require siek)
 
 (module+ test
   (require rackunit/text-ui)
