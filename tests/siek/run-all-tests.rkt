@@ -18,8 +18,7 @@
          "interp-x861-test.rkt"
          "interp-x860-test.rkt"
          "x860-test.rkt"
-         "C1-test.rkt"
-         "C0-test.rkt"
+         "C-test.rkt"
          "R2-test.rkt"
          "R1-test.rkt"
          "R0-test.rkt")

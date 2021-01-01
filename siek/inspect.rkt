@@ -41,6 +41,22 @@
 (: write-exp (-> Output-Port Any Void))
 (define (write-exp port e)
   (match e
-    [(? fixnum?) (fprintf port "~a" e)]
-    [(? boolean?) (fprintf port "~a" e)]
-    [`(< ,a0 ,a1) (fprintf port "(< ~a ~a)" a0 a1)]))
+    [(? atom?) (fprintf port "~a" e)]
+    [(and (? prim?) `(,op ,a))
+     (fprintf port "(~a ~a)" op a)]
+    [(and (? prim?) `(,op ,a0 ,a1))
+     (fprintf port "(~a ~a ~a)" op a0 a1)]))
+
+(: atom? (-> Any Boolean))
+(define (atom? v)
+  (cond
+    [(fixnum? v)]
+    [(boolean? v)]
+    [(symbol? v)]
+    [else #f]))
+
+(: prim? (-> Any Boolean))
+(define (prim? v)
+  (and (list? v)
+       (member (first v) '(eq? < <= > >= - + and or not))
+       (andmap atom? (rest v))))

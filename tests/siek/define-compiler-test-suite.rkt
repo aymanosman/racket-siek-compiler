@@ -32,6 +32,6 @@
        (define parent-test-cases (hash-ref (syntax-local-value #'parent-info) 'test-cases))
        (define/with-syntax (case* ...) (append (syntax->list #'(e* ...)) parent-test-cases))
        #`(begin
-           (define-syntax id-info (hash 'meta '(case* ...)))
+           (define-syntax id-info (hash 'test-cases '(case* ...)))
            (define-test-suite id
              (test-compiler compiler signature case* ...))))]))
