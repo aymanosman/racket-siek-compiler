@@ -7,6 +7,25 @@
          siek/inspect
          (for-syntax racket/syntax syntax/parse))
 
+(define-syntax (define-interp-test-suite stx)
+  (syntax-case stx (test)
+    [(_ id t* ...)
+     #'(define-extended-interp-test-suite id #f t* ...)]))
+
+(define-syntax (define-extended-interp-test-suite stx)
+  (syntax-case stx (test)
+    [(_ id parent #:interpreter interp (test case* ...) ...)
+     (with-syntax ([id-info (format-id #'id "~a-info" (syntax-e #'id))]
+                   [((case* ...) ...)
+                    (append (syntax->list #'((case* ...) ...))
+                            (parent-test-cases #'parent))])
+       #`(begin
+           (define-syntax id-info (hash 'test-cases '((case* ...) ...)))
+           (define-test-suite id
+             (let-syntax ([test-C (test-C #'interp)])
+               (test-C case* ...))
+             ...)))]))
+
 (define-for-syntax ((test-C interp-C) stx)
   (syntax-parse stx
     [(loc (~optional (~seq #:input input:str))
@@ -16,37 +35,18 @@
      (with-syntax ([interp-C interp-C])
        #`(let ([prog `(program () ,(stanza*->code '(stanza* ...)))])
            (test-case (~a (C prog))
-             #,(syntax/loc #'loc
-                 (check-interp interp-C prog result (~? input ""))))))]))
+                      #,(syntax/loc #'loc
+                          (check-interp interp-C prog result (~? input ""))))))]))
 
-(define-syntax (define-interp-test-suite stx)
-  (syntax-case stx (test)
-    [(_ id #:interpreter interp (test case* ...) ...)
-     (let ()
-       (define/with-syntax id-info (format-id #'id "~a-info" (syntax-e #'id)))
-       #`(begin
-           (define-syntax id-info (hash 'test-cases '((case* ...) ...)))
-           (define-test-suite id
-             (let-syntax ([test-C (test-C #'interp)])
-               (test-C case* ...))
-             ...)))]))
-
-(define-syntax (define-extended-interp-test-suite stx)
-  (syntax-case stx (test)
-    [(_ id parent #:interpreter interp (test case* ...) ...)
-     (let ()
-       (define/with-syntax parent-info (format-id #'parent "~a-info" (syntax-e #'parent)))
-       (define/with-syntax id-info (format-id #'id "~a-info" (syntax-e #'id)))
-       (define parent-test-cases (hash-ref (syntax-local-value #'parent-info) 'test-cases))
-       (define/with-syntax ((combined-case* ...) ...)
-         (append (syntax->list #'((case* ...) ...))
-                 parent-test-cases))
-       #`(begin
-           (define-syntax id-info (hash 'test-cases '((combined-case* ...) ...)))
-           (define-test-suite id
-             (let-syntax ([test-C (test-C #'interp)])
-               (test-C combined-case* ...))
-             ...)))]))
+(define-for-syntax (parent-test-cases parent-stx)
+  (local-require threading)
+  (cond
+    [(syntax-e parent-stx)
+     (~> (format-id parent-stx "~a-info" (syntax-e parent-stx))
+         (syntax-local-value _)
+         (hash-ref _ 'test-cases))]
+    [else
+     '()]))
 
 (define (stanza*->code _)
   (map stanza->code _))
