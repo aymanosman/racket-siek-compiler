@@ -8,7 +8,7 @@
          siek/build-interference
          siek/assign-homes
          siek/move-related
-         (submod siek/patch-instructions-pass-R1 for-test))
+         (submod siek/patch-instructions-R1 for-test))
 
 (module+ test
   (require rackunit/text-ui)
