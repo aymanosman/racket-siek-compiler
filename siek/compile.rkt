@@ -16,24 +16,24 @@
     (c `(program () ,(read in)))))
 
 (define compile/R1/chapter2
-  (compose1 print-x86-pass-R1
-            patch-instructions-pass-R1
-            assign-homes-pass-R1
-            select-instructions-pass-R1
-            uncover-locals-pass-R1
-            explicate-control-pass-R1
+  (compose1 print-x86-R1
+            patch-instructions-R1
+            assign-homes-R1
+            select-instructions-R1
+            uncover-locals-R1
+            explicate-control-R1
             normalize-R1
             uniquify-R1))
 
 (define compile/R1/chapter3
-  (compose1 print-x86-pass-R1
-            patch-instructions-pass-R1
-            allocate-registers-pass-R1
-            build-interference-pass-R1
-            uncover-live-pass-R1
-            select-instructions-pass-R1
-            uncover-locals-pass-R1
-            explicate-control-pass-R1
+  (compose1 print-x86-R1
+            patch-instructions-R1
+            allocate-registers-R1
+            build-interference-R1
+            uncover-live-R1
+            select-instructions-R1
+            uncover-locals-R1
+            explicate-control-R1
             normalize-R1
             uniquify-R1))
 

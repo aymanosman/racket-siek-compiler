@@ -12,14 +12,14 @@
 (define-compiler compile
                  (uniquify-R1
                   normalize-R1
-                  explicate-control-pass-R1
-                  uncover-locals-pass-R1
-                  select-instructions-pass-R1
-                  uncover-live-pass-R1
-                  build-interference-pass-R1
+                  explicate-control-R1
+                  uncover-locals-R1
+                  select-instructions-R1
+                  uncover-live-R1
+                  build-interference-R1
                   assign-colors-R1
-                  allocate-registers-pass-R1
-                  patch-instructions-pass-R1))
+                  allocate-registers-R1
+                  patch-instructions-R1))
 
 ;; (compiler-trace! compile #t)
 

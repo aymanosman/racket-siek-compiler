@@ -1,11 +1,11 @@
 #lang racket
 
-(provide allocate-registers-pass-R1)
+(provide allocate-registers-R1)
 
 (require "assign-homes.rkt"
          "options.rkt")
 
-(define (allocate-registers-pass-R1 p)
+(define (allocate-registers-R1 p)
   (match p
     [`(program ,info ,code)
      `(program

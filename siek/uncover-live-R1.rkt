@@ -1,11 +1,11 @@
 #lang racket
 
-(provide uncover-live-pass-R1)
+(provide uncover-live-R1)
 
 (require "live-afters.rkt"
          "raise-mismatch-error.rkt")
 
-(define (uncover-live-pass-R1 p)
+(define (uncover-live-R1 p)
   (match p
     [`(program ,info ,code)
      `(program
@@ -14,7 +14,7 @@
          (match-lambda [(cons label block)
                         (cons label (uncover-live-block block))])
          code))]
-    [_ (raise-mismatch-error 'uncover-live-pass-R1 'top p)]))
+    [_ (raise-mismatch-error 'uncover-live-R1 'top p)]))
 
 (define (uncover-live-block b)
   (match b
@@ -22,4 +22,4 @@
      `(block
        ((live-afters . ,(live-afters instr*)))
        ,@instr*)]
-    [_ (raise-mismatch-error 'uncover-live-pass-R1 'block b)]))
+    [_ (raise-mismatch-error 'uncover-live-R1 'block b)]))

@@ -14,7 +14,7 @@
 (define-compiler compile-R1
   (uniquify-R1
    normalize-R1
-   explicate-control-pass-R1))
+   explicate-control-R1))
 
 (define-compiler-test-suite explicate-control-tests
   #:compiler compile-R1

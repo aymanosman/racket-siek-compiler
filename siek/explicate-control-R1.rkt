@@ -1,7 +1,7 @@
 #lang racket
 
 (provide explicate-control-R1%
-         (rename-out [explicate-control-R1 explicate-control-pass-R1]))
+         explicate-control-R1)
 
 (require "raise-mismatch-error.rkt")
 

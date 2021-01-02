@@ -1,11 +1,11 @@
 #lang racket
 
-(provide assign-homes-pass-R1)
+(provide assign-homes-R1)
 
 (require "assign-homes.rkt"
          "raise-mismatch-error.rkt")
 
-(define (assign-homes-pass-R1 p)
+(define (assign-homes-R1 p)
   (match p
     [`(program ,info ((start . ,block)))
      (define-values (env stack-space) (locals->homes (dict-ref info 'locals)))
@@ -13,7 +13,7 @@
        ()
        ((start . ,(assign-homes-block env stack-space block))))]
     [_
-     (raise-mismatch-error 'assign-homes-pass-R1 'top p)]))
+     (raise-mismatch-error 'assign-homes-R1 'top p)]))
 
 (define (assign-homes-block env stack-space b)
   (match b
@@ -21,7 +21,7 @@
      ;; TODO do stack-space properly
      `(block ((stack-space . ,stack-space)) ,@(assign-homes env instr*))]
     [_
-     (raise-mismatch-error 'assign-homes-pass-R1 'block b)]))
+     (raise-mismatch-error 'assign-homes-R1 'block b)]))
 
 (define (locals->homes var*)
   (let loop ([env '()]

@@ -8,11 +8,11 @@
 (define-compiler compile
   (uniquify-R1
    normalize-R1
-   explicate-control-pass-R1
-   uncover-locals-pass-R1
-   select-instructions-pass-R1
-   assign-homes-pass-R1
-   patch-instructions-pass-R1))
+   explicate-control-R1
+   uncover-locals-R1
+   select-instructions-R1
+   assign-homes-R1
+   patch-instructions-R1))
 
 ;; (compiler-trace! compile #t)
 

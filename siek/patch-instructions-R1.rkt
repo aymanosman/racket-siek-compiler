@@ -1,6 +1,6 @@
 #lang racket
 
-(provide patch-instructions-pass-R1)
+(provide patch-instructions-R1)
 
 (module+ for-test
   (provide patch-instructions-instr))
@@ -8,17 +8,17 @@
 (require "match-instr.rkt"
          "raise-mismatch-error.rkt")
 
-(define (patch-instructions-pass-R1 p)
+(define (patch-instructions-R1 p)
   (match p
     [`(program ,info ((start . ,block)))
      `(program ,info ((start . ,(patch-instructions-block block))))]
-    [_ (raise-mismatch-error 'patch-instructions-pass-R1 'top p)]))
+    [_ (raise-mismatch-error 'patch-instructions-R1 'top p)]))
 
 (define (patch-instructions-block b)
   (match b
     [`(block ,info ,instr* ...)
      `(block ,info ,@(append-map patch-instructions-instr instr*))]
-    [_ (raise-mismatch-error 'patch-instructions-pass-R1 'block b)]))
+    [_ (raise-mismatch-error 'patch-instructions-R1 'block b)]))
 
 (define (patch-instructions-instr i)
   (match i
@@ -32,4 +32,4 @@
     [`(,op ,a0 ,a1)
      (list i)]
     [_
-     (raise-mismatch-error 'patch-instructions-pass-R1 'instr i)]))
+     (raise-mismatch-error 'patch-instructions-R1 'instr i)]))

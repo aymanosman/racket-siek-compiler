@@ -1,10 +1,10 @@
 #lang racket
 
-(provide select-instructions-pass-R1)
+(provide select-instructions-R1)
 
 (require "raise-mismatch-error.rkt")
 
-(define (select-instructions-pass-R1 p)
+(define (select-instructions-R1 p)
   (match p
     [`(program ,info ((start . ,tail)))
      `(program
@@ -14,7 +14,7 @@
                       ,@(select-instructions-tail tail)
                       (jmp conclusion)))))]
     [_
-     (raise-mismatch-error 'select-instructions-pass-R1 'top p)]))
+     (raise-mismatch-error 'select-instructions-R1 'top p)]))
 
 (define (select-instructions-tail t)
   (match t
@@ -24,7 +24,7 @@
      (append (select-instructions-stmt stmt)
              (select-instructions-tail tail))]
     [_
-     (raise-mismatch-error 'select-instructions-pass-R1 'tail t)]))
+     (raise-mismatch-error 'select-instructions-R1 'tail t)]))
 
 (define (select-instructions-stmt stmt)
   (match stmt
@@ -34,7 +34,7 @@
          [`(reg rax) v]
          [(? symbol?) `(var ,v)]
          [_
-          (raise-mismatch-error 'select-instructions-pass-R1 'var v)]))
+          (raise-mismatch-error 'select-instructions-R1 'var v)]))
      (match e
        ;; Arg
        [(? fixnum?) (list `(movq (int ,e) ,r))]
@@ -60,11 +60,11 @@
         (list `(movq ,(select-instructions-arg a0) ,r)
               `(addq ,(select-instructions-arg a1) ,r))])]
     [_
-     (raise-mismatch-error 'select-instructions-pass-R1 'stmt stmt)]))
+     (raise-mismatch-error 'select-instructions-R1 'stmt stmt)]))
 
 (define (select-instructions-arg a)
   (match a
     [(? fixnum?) `(int ,a)]
     [(? symbol?) `(var ,a)]
     [_
-     (raise-mismatch-error 'select-instructions-pass-R1 'arg a)]))
+     (raise-mismatch-error 'select-instructions-R1 'arg a)]))

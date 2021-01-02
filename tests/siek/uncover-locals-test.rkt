@@ -12,8 +12,8 @@
 (define-compiler compiler
   (uniquify-R1
    normalize-R1
-   explicate-control-pass-R1
-   uncover-locals-pass-R1))
+   explicate-control-R1
+   uncover-locals-R1))
 
 (define-compiler-test-suite uncover-locals-tests
   #:compiler compiler

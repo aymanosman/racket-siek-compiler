@@ -1,18 +1,18 @@
 #lang racket
 
-(provide build-interference-pass-R1)
+(provide build-interference-R1)
 
 (require "build-interference.rkt"
          "raise-mismatch-error.rkt")
 
-(define (build-interference-pass-R1 p)
+(define (build-interference-R1 p)
   (match p
     [`(program ,info ,blocks)
      `(program
        ,info
        ,(map build-interference-block blocks))]
     [_
-     (raise-mismatch-error 'build-interference-pass-R1 'top p)]))
+     (raise-mismatch-error 'build-interference-R1 'top p)]))
 
 (define (build-interference-block b)
   (match b
@@ -22,4 +22,4 @@
              ((conflicts . ,(build-interference (dict-ref info 'live-afters) instr*)))
              ,@instr*))]
     [_
-     (raise-mismatch-error 'build-interference-pass-R1 'block b)]))
+     (raise-mismatch-error 'build-interference-R1 'block b)]))

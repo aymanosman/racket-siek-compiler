@@ -1,12 +1,12 @@
 #lang racket
 
-(provide print-x86-pass-R1
-         (rename-out [print-x86-pass-R1 print-x86]))
+(provide print-x86-R1
+         (rename-out [print-x86-R1 print-x86]))
 
 (require "options.rkt"
          "raise-mismatch-error.rkt")
 
-(define (print-x86-pass-R1 p)
+(define (print-x86-R1 p)
   (match p
     [`(program ,info ((start . ,block)))
      (print-x86-label 'start)
@@ -14,7 +14,7 @@
      (print-x86-block block)
      (print-x86-main)
      (print-x86-conclusion)]
-    [_ (raise-mismatch-error 'print-x86-pass-R1 'top p)]))
+    [_ (raise-mismatch-error 'print-x86-R1 'top p)]))
 
 (define (print-x86-block b)
   (match b
@@ -24,7 +24,7 @@
                  (print-x86-instr i)
                  (newline))
                instr*)]
-    [_ (raise-mismatch-error 'print-x86-pass-R1 'block b)]))
+    [_ (raise-mismatch-error 'print-x86-R1 'block b)]))
 
 (define (print-x86-instr i)
   (match i
@@ -38,7 +38,7 @@
      (print-x86-arg a0)
      (printf ", ")
      (print-x86-arg a1)]
-    [_ (raise-mismatch-error 'print-x86-pass-R1 'instr i)]))
+    [_ (raise-mismatch-error 'print-x86-R1 'instr i)]))
 
 (define (print-x86-arg a)
   (match a
@@ -50,7 +50,7 @@
      (printf "%~a" r)]
     [`(deref ,r ,n)
      (printf "~a(%~a)" n r)]
-    [_ (raise-mismatch-error 'print-x86-pass-R1 'arg a)]))
+    [_ (raise-mismatch-error 'print-x86-R1 'arg a)]))
 
 (define (print-x86-label l)
   (case (current-system-type)
