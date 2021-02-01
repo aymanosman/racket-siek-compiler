@@ -5,34 +5,33 @@
 
 (require (for-syntax racket/syntax syntax/parse)
          rackunit
-         siek)
+         siek
+         siek/inspect)
 
 (define-syntax (define-test-x86 stx)
   (syntax-case stx ()
     [(_ x86)
-     (let ()
-       (define/with-syntax test-x86 (format-id #'x86 "test-~a" (syntax-e #'x86)))
-       (define/with-syntax interp-x86 (format-id #'x86 "interp-~a" (syntax-e #'x86)))
-       (define/with-syntax format-x86 (format-id #'x86 "format-~a" (syntax-e #'x86)))
-       #`(define-syntax
-          (test-x86 stx)
-          (syntax-parse stx
-            [(_ name
-                (~optional (~seq #:input input:str))
-                result
-                stanza*
-                (... ...))
-             (with-syntax ([body
-                            #'(let
-                               ([prog `(program () ,(stanza*->cfg '(stanza* (... ...))))])
-                               (with-check-info
-                                (['program (unquoted-printing-string (format-x86 prog))])
-                                (check-equal? (interp-x86 prog) result)))])
-               #'(test-case
-                  name
-                  ((... ~?)
-                   (with-input input body)
-                   body)))])))]))
+     (with-syntax ([test-x86 (format-id #'x86 "test-~a" (syntax-e #'x86))]
+                   [interp-x86 (format-id #'x86 "interp-~a" (syntax-e #'x86))])
+       #`(...
+          (define-syntax (test-x86 stx)
+            (syntax-parse stx
+              [(_ name
+                  (~optional (~seq #:input input:str))
+                  result
+                  stanza* ...)
+               (with-syntax ([body
+                              #'(let
+                                    ([prog `(program () ,(stanza*->cfg '(stanza* ...)))])
+                                  (with-check-info
+                                    (['program (unquoted-printing-string (let ([port (open-output-string)])
+                                                                           (write-x86 port prog)
+                                                                           (get-output-string port)))])
+                                    (check-equal? (interp-x86 prog) result)))])
+                 #'(test-case name
+                     (~?
+                      (with-input input body)
+                      body)))]))))]))
 
 (define (stanza*->cfg block*)
   (map stanza->block block*))

@@ -8,10 +8,12 @@
 
 (define (print-x86-R1 p)
   (match p
-    [`(program ,info ((start . ,block)))
-     (print-x86-label 'start)
-     (printf ":\n")
-     (print-x86-block block)
+    [`(program ,info ,code)
+     (for ([label+block code])
+       (match-define (cons label block) label+block)
+       (print-x86-label label)
+       (printf ":\n")
+       (print-x86-block block))
      (print-x86-main)
      (print-x86-conclusion)]
     [_ (raise-mismatch-error 'print-x86-R1 'top p)]))

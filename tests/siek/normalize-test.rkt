@@ -19,6 +19,7 @@
   #:compiler compile-R1
   #:signature (R1 -> R1†)
   2
+  (+ (+ 1 2) 2)
   (let ([x 32])
     (+ x 10))
   (let ([x (let ([x 4])
@@ -26,7 +27,8 @@
     (+ x 2)))
 
 (define-compiler compile-R2
-  (uniquify-R2
+  (shrink-R2
+   uniquify-R2
    normalize-R2))
 
 ;; (compiler-trace! compile-R2 #t)
@@ -36,6 +38,7 @@
   #:signature (R2 -> R2†)
   (not (< 1 2))
   [(- (read) (read)) <= "13 3"]
+  (+ (if (eq? 1 2) 1 2) 3)
   (if (if (< 1 2) #t #f)
       12
       13))

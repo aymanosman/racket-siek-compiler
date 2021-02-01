@@ -1,7 +1,7 @@
 #lang racket
 
-(provide C0%
-         interp-C0)
+(provide interp-C0
+         interp-C1)
 
 (require racket/fixnum
          "raise-mismatch-error.rkt")
@@ -78,3 +78,72 @@
         [(? fixnum?) #t]
         [(? symbol?) #t]
         [_ #f]))))
+
+#;
+(define-language C1
+  (terminals
+   (boolean? b))
+  (grammar
+   (tail t := ...
+              (goto l)
+              (if (c a a) (goto l) (goto l)))
+   (exp e := ...
+             (not a) (c a a))
+   (cmp c := eq? <)
+   (atom a := ... b)))
+
+(define (interp-C1 p)
+  (send (new C1%) interp p))
+
+(define C1%
+  (class C0%
+    (super-new)
+
+    (define/override (who)
+      'interp-C1)
+
+    (define/override (interp-tail code env t)
+      (match t
+        [`(goto ,l)
+         (interp-tail code env (dict-ref code l))]
+        [`(if ,e (goto ,then) (goto ,else))
+         (match (interp-exp env e)
+           [#t (interp-tail code env (dict-ref code then))]
+           [#f (interp-tail code env (dict-ref code else))])]
+        [_ (super interp-tail code env t)]))
+
+    (define/override (interp-exp env e)
+
+      (define-match-expander prim
+        (lambda (stx)
+          (syntax-case stx ()
+            [(_ op a* ...)
+             #'(list op (app (lambda (a) (interp-atom env a)) a*) ...)])))
+
+      (match e
+        [(prim (and 'not op) a)
+         (interp-prim op (list a))]
+        [(prim (and (or 'eq? '<) op) a0 a1)
+         (interp-prim op (list a0 a1))]
+        [_ (super interp-exp env e)]))
+
+    (define/public (interp-prim op a*)
+      (define proc
+        (case op
+          [(eq?) =]
+          [(<) <]
+          [(not) not]
+          [else
+           (raise-arguments-error (who) "unrecognised operator"
+                                  "operator" op)]))
+      (apply proc a*))
+
+    (define/override (interp-atom env a)
+      (match a
+        [(? boolean?) a]
+        [_ (super interp-atom env a)]))
+
+    (define/override (atom? a)
+      (match a
+        [(? boolean?) #t]
+        [_ (super atom? a)]))))

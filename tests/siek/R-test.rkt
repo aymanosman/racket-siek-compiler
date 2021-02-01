@@ -51,7 +51,12 @@
       10)
   (if (if (< 0 1) #f #f)
       39
-      10))
+      10)
+  (let ([x 10])
+    (let ([y 20])
+      (if (if (let ([x 1]) (< x 2)) (eq? 1 2) #f)
+          (+ x 1)
+          (+ y 1)))))
 
 (define typecheck-R2-tests
   (test-typecheck-fail

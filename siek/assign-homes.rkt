@@ -1,46 +1,54 @@
 #lang racket
 
-(provide assign-homes
-         colors->homes)
+(provide assign-homes-R1
+         assign-homes-R2)
 
-(require "raise-mismatch-error.rkt"
-         "options.rkt")
+(require "assign-homes-x86.rkt"
+         "raise-mismatch-error.rkt")
 
-(define (assign-homes env instr*)
-  (map (lambda (i) (assign-homes-instr env i)) instr*))
+(define (assign-homes-R1 p)
+  (send (new assign-homes-R1%) assign p))
 
-(define (assign-homes-instr env i)
-  (match i
-    [`(jmp ,l) i]
-    [`(callq ,l) i]
-    [`(,op ,a* ...)
-     `(,op ,@(map (lambda (a) (assign-homes-arg env a)) a*))]
-    [_
-     (raise-mismatch-error 'assign-homes 'instr i)]))
+(define assign-homes-R2 assign-homes-R1)
 
-(define (assign-homes-arg env a)
-  (match a
-    [`(int ,_) a]
-    [`(reg ,_) a]
-    [`(var ,v) (dict-ref env v)]
-    [_
-     (raise-mismatch-error 'assign-homes 'arg a)]))
+(define assign-homes-R1%
+  (class object%
+    (super-new)
 
-(define (colors->homes colors)
-  (for/hash ([(v c) (in-hash colors)])
-    (values v (color->arg c))))
+    (define/public (who)
+      'assign-homes-R1)
 
-(define (color->arg c)
-  (cond
-    [(and (>= c 0) (< c (compiler-stack-location-index)))
-     `(reg ,(hash-ref register-table c))]
-    [else
-     `(deref rbp ,(stack-offset (- c (compiler-stack-location-index))))]))
+    (define/public (assign p)
+      (match p
+        [`(program ,info ,code)
+         (define-values (env stack-space) (locals->homes (dict-ref info 'locals)))
+         `(program
+           ,info
+           ,(map (match-lambda [(cons label block)
+                                (cons label (assign-homes-block env stack-space block))])
+                 code))]
+        [_
+         (raise-mismatch-error (who) 'top p)]))
 
-(define (stack-offset n)
-  (- (* 8 (add1 n))))
+    (define/public (assign-homes-block env stack-space b)
+      (match b
+        [`(block ,info ,instr* ...)
+         ;; TODO do stack-space properly
+         `(block
+           ,(dict-set info 'stack-space stack-space)
+           ,@(assign-homes-x86 env instr*))]
+        [_
+         (raise-mismatch-error (who) 'block b)]))
 
-(define register-table
-  (hash 0 'rbx
-        1 'rcx
-        2 'rdx))
+    (define/public (locals->homes var*)
+      (let loop ([env '()]
+                 [v var*]
+                 [l 0])
+        (cond
+          [(empty? v)
+           (values env (abs l))]
+          [else
+           (define r (- l 8))
+           (loop (dict-set env (first v) `(deref rbp ,r))
+                 (rest v)
+                 r)])))))

@@ -14,7 +14,10 @@
 (define-compiler compile-R1
   (uniquify-R1
    normalize-R1
-   explicate-control-R1))
+   explicate-control-R1
+   remove-jumps-R1))
+
+;; (compiler-trace! compile-R1 #t)
 
 (define-compiler-test-suite explicate-control-tests
   #:compiler compile-R1
@@ -34,7 +37,7 @@
    normalize-R2
    explicate-control-R2))
 
-(compiler-trace! compile-R2 #t)
+;; (compiler-trace! compile-R2 #t)
 
 (define-extended-compiler-test-suite explicate-control-R2-tests explicate-control-tests
   #:compiler compile-R2
@@ -56,6 +59,9 @@
   (if (if (< 1 2) #t #f)
       12
       13)
+  (if (or #f #t)
+      10
+      20)
   (let ([x (if (< 1 2)
                10
                20)])

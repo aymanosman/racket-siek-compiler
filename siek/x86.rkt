@@ -1,75 +1,55 @@
 #lang racket
 
-(provide x860%
+(provide caller-saved-registers
+         callee-saved-registers
+         register?
+
+         x860%
          x860?
          x860*?
          interp-x860
          interp-x860*
-         format-x860)
+
+         x861?
+         x861*?
+         interp-x861
+         interp-x861*
+         format-x861)
 
 (require racket/fixnum
          racket/undefined
          threading
-         "define-x86.rkt"
          "block.rkt"
+         "define-x86.rkt"
          "options.rkt"
          "raise-mismatch-error.rkt")
 
+(define (register? r)
+  (set-member? (set-union (caller-saved-registers)
+                          (callee-saved-registers))
+               r))
+
+(define callee-saved-registers
+  (make-parameter
+   (set 'rsp 'rbp 'rbx 'r12 'r13 'r14 'r15)))
+
+(define caller-saved-registers
+  (make-parameter
+   (set 'rax 'rcx 'rdx 'rsi 'rdi 'r8 'r9 'r10 'r11)))
+
 ;; x860
-;; instr := (addq a a) | (subq a a) | (negq a) | (movq a a)
-;;        | (callq l) | (pushq a) | (popq a) | (retq) | (jmp l)
-;; arg   := (int n) | (reg r) | (deref r n)
+#;
+(define-language x860
+  (grammar
+   (instr := (addq a a) (subq a a) (negq a) (movq a a)
+             (callq l) (pushq a) (popq a) (retq) (jmp l))
+   (arg a := (int n) (reg r) (deref r n))))
 
 (define-x86 x860%)
 
 (define x860%
   (class object%
     (super-new)
-
-    (define/public (? p)
-      (match p
-        [`(program ,_ ((start . ,block)))
-         (block? block)]
-        [_ #f]))
-
-    (define/public (block? b)
-      (match b
-        [`(block ,_ ,instr* ...)
-         (andmap (lambda (i) (instr? i)) instr*)]
-        [_ #f]))
-
-    (define/public (instr? i)
-      (match i
-        [`(movq ,a0 ,a1) (and (arg? a0) (arg? a1))]
-        [`(negq ,a) (arg? a)]
-        [`(addq ,a0 ,a1) (and (arg? a0) (arg? a1))]
-        [`(subq ,a0 ,a1) (and (arg? a0) (arg? a1))]
-        [`(retq) #t]
-        [`(callq ,label)
-         #:when
-         (symbol? label)
-         #t]
-        [`(pushq ,a) (arg? a)]
-        [`(popq ,a) (arg? a)]
-        [_ #f]))
-
-    (define/public (arg? a)
-      (match a
-        [`(int ,n) #:when (fixnum? n) #t]
-        [`(reg ,r) #:when (register? r) #t]
-        [`(deref ,r ,n) #:when (and (register? r) (fixnum? n)) #t]
-        [`(var ,v)
-         #:when
-         (var? v)
-         #t]
-        [_ #f]))
-
-    (define/public (var? v)
-      (and (compiler-psuedo-x86?)
-           (symbol? v)))
-
-    (define/public (register? r)
-      (and (member r '(rsp rbp rax rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 r13 r14 r15)) #t))
 
     (define/public (who)
       (if (compiler-psuedo-x86?)
@@ -148,6 +128,7 @@
             (interp-instr* code (interp-instr env i) i*)])]))
 
     (define/public (interp-instr env i)
+      (local-require threading)
       (match i
         [`(addq ,a0 ,a1)
          (dict-set env (l-value a1) (fx+ (r-value env a1) (r-value env a0)))]
@@ -208,56 +189,106 @@
          (var? v)
          (dict-ref env v)]
         [_
-         (raise-mismatch-error (who) 'r-value a)]))
+         (raise-mismatch-error (who) 'r-value a)]))))
 
-    (define/public (format p)
-      (match p
-        [`(program ,_ ,cfg)
-         (with-output-to-string
-          (thunk
-           (newline)
-           (format-cfg cfg)))]))
+(define (var? v)
+  (and (compiler-psuedo-x86?)
+       (symbol? v)))
 
-    (define/public (format-cfg cfg)
-      ;; TODO topological order?
-      (for ([s cfg])
-        (match-define (cons label block) s)
-        (printf "~a:\n" label)
-        (format-block block)))
+;; x861
+;; instr   := ...
+;;          | (xorq a a) | (cmpq a a) | ( set<cc> a) | (movzbq a a) | (j<cc> l)
+;; arg     := ... | (bytereg b)
+;; cc      := e | l | le | g | ge
+;; bytereg := ah | al | bh | bl | ch | cl | dh | dl
 
-    (define/public (format-block b)
-      (match b
-        [`(block ,_ ,instr* ...)
-         (for ([i instr*])
-           (format-instr i))]))
+(define-x86 x861%)
 
-    (define/public (format-instr i)
+(define x861%
+  (class x860%
+    (super-new)
+
+    (inherit interp-block)
+
+    (define/override (who)
+      (if (compiler-psuedo-x86?)
+          'interp-x861*
+          'interp-x861))
+
+    (define/override (interp-instr* code env i*)
+      (match i*
+        ['()
+         env]
+        [(cons i i*)
+         (match i
+           [`(jl ,l)
+            (match (interp-eflags env 'l)
+              [1 (interp-block code env (dict-ref code l))]
+              [0 (interp-instr* code env i*)])]
+           [`(je ,l)
+            (match (interp-eflags env 'e)
+              [1 (interp-block code env (dict-ref code l))]
+              [0 (interp-instr* code env i*)])]
+           [_
+            (super interp-instr* code env (cons i i*))])]))
+
+    (define/override (interp-instr env i)
+      (local-require (only-in "match-instr.rkt" set))
       (match i
-        [`(callq ,l)
-         (printf "    callq ~a" l)]
-        [`(jmp ,l)
-         (printf "    jmp ~a" l)]
-        [`(,op ,a)
-         (printf "    ~a " op)
-         (format-arg a)
-         (printf "\n")]
-        [`(,op ,a0 ,a1)
-         (printf "    ~a " op)
-         (format-arg a0)
-         (printf ", ")
-         (format-arg a1)
-         (printf "\n")]))
+        [`(xorq ,a0 ,a1)
+         (interp-op env 'xorq (l-value a1) (r-value env a1) (r-value env a0))]
+        [`(cmpq ,a0 ,a1)
+         #:when (member (first a1) '(var reg deref bytereg))
+         (interp-op env 'cmpq 'eflags (r-value env a1) (r-value env a0))]
+        [(set cc a)
+         (dict-set env (l-value a) (interp-eflags env cc))]
+        [`(movzbq ,a0 ,a1)
+         (interp-instr env `(movq ,a0 ,a1))]
+        [_ (super interp-instr env i)]))
 
-    (define/public (format-arg a)
+    (define/public (interp-eflags env mode)
+      (~> env
+          (dict-ref _ 'eflags)
+          (symbol=? _ mode)
+          boolean->integer))
+
+    (define/override (l-value a)
       (match a
-        [`(int ,n)
-         (printf "$~a" n)]
-        [`(reg ,r)
-         (printf "%~a" r)]
-        ;; TODO move
         [`(bytereg ,r)
-         (printf "%~a" r)]
-        [`(var ,v)
-         (printf "~a" v)]
-        [`(deref ,r ,n)
-         (printf "~a(%~a)" n r)]))))
+         #:when
+         (byte-register? r)
+         r]
+        [_ (super l-value a)]))
+
+    (define/override (r-value env a)
+      (match a
+        [`(bytereg ,r)
+         #:when
+         (byte-register? r)
+         (dict-ref env r)]
+        [_ (super r-value env a)]))
+
+    (define/public (byte-register? r)
+      (and (member r '(ah al bh bl ch cl dh dl))))
+
+    (define/public (interp-op env op dest a1 a0)
+      (define proc
+        (case op
+          [(xorq) handle-xorq]
+          [(cmpq) handle-cmpq]))
+      (dict-set env dest (proc a1 a0)))))
+
+(define (handle-xorq a1 a0) (bitwise-xor a1 a0))
+
+(define (handle-cmpq x y)
+  (cond
+    [(= x y) 'e]
+    [(< x y) 'l]
+    [(<= x y) 'le]
+    [(> x y) 'g]
+    [(>= x y) 'ge]))
+
+(define (boolean->integer b)
+  (match b
+    [#t 1]
+    [#f 0]))

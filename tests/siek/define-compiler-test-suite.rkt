@@ -27,11 +27,14 @@
         #:signature signature
         e* ...)
      (let ()
-       (define/with-syntax parent-info (format-id #'parent "~a-info" (syntax-e #'parent)))
-       (define/with-syntax id-info (format-id #'id "~a-info" (syntax-e #'id)))
-       (define parent-test-cases (hash-ref (syntax-local-value #'parent-info) 'test-cases))
-       (define/with-syntax (case* ...) (append (syntax->list #'(e* ...)) parent-test-cases))
-       #`(begin
-           (define-syntax id-info (hash 'test-cases '(case* ...)))
-           (define-test-suite id
-             (test-compiler compiler signature case* ...))))]))
+       (with-syntax ([id-info (format-id #'id "~a-info" (syntax-e #'id))]
+                     [(case* ...)
+                      (append (syntax->list #'(e* ...))
+                              (hash-ref (syntax-local-value (format-id #'parent
+                                                                       "~a-info"
+                                                                       (syntax-e #'parent)))
+                                        'test-cases))])
+         #`(begin
+             (define-syntax id-info (hash 'test-cases '(case* ...)))
+             (define-test-suite id
+               (test-compiler compiler signature case* ...)))))]))

@@ -13,6 +13,7 @@
   (uniquify-R1
    normalize-R1
    explicate-control-R1
+   remove-jumps-R1
    uncover-locals-R1))
 
 (define-compiler-test-suite uncover-locals-tests

@@ -3,16 +3,21 @@
 (provide color-graph)
 
 (require graph
+         "x86.rkt"
          "color-node.rkt"
+         "colors-to-homes.rkt"
          "heap.rkt")
 
 (define-logger siek #:parent (current-logger))
 
-(define (color-graph conflict-graph move-graph #:order-for-test [order-for-test #f])
+(define (color-graph conflict-graph
+                     locals
+                     [move-graph #f]
+                     #:order-for-test [order-for-test #f])
   (define q (make-heap node<=?))
 
   (define nodes
-    (for/hash ([x (get-vertices conflict-graph)])
+    (for/hash ([x (remove-duplicates (append locals (get-vertices conflict-graph)))])
       (define n (node x (mutable-set)))
       (heap-add! q n)
       (values x n)))
@@ -33,9 +38,14 @@
     (update-neighbours x c))
 
   (define (init-assigned)
-    (for ([(reg color) (in-hash #hash((rax . -1) (rsp . -2)))])
+    (for ([(reg color) (sequence-append (in-hash #hash((rax . -1)
+                                                       (rsp . -2)))
+                                        (in-hash register=>color))])
+      (when (not (has-vertex? conflict-graph reg))
+        (add-vertex! conflict-graph reg))
       (assign-color reg color)
-      (heap-remove-eq! q (hash-ref nodes reg))))
+      (when (hash-has-key? nodes reg)
+        (heap-remove-eq! q (hash-ref nodes reg)))))
 
   (define (available-color n)
     (for/first ([c (in-naturals)]
@@ -57,12 +67,16 @@
                (reverse acc)))])))
 
   (define (move-color n)
-    (for/first ([m (in-neighbors move-graph (node-name n))]
-                #:when
-                ;; TODO reject stack locations
-                (and (hash-has-key? assigned m)
-                     (not (set-member? (node-unavailable n) (hash-ref assigned m)))))
-      (hash-ref assigned m)))
+    (cond
+      [(register? (node-name n))
+       #f]
+      [else
+       (for/first ([m (in-neighbors move-graph (node-name n))]
+                   #:when
+                   ;; TODO reject stack locations
+                   (and (hash-has-key? assigned m)
+                        (not (set-member? (node-unavailable n) (hash-ref assigned m)))))
+         (hash-ref assigned m))]))
 
   (define (pick-candidate+color)
     (define candidates (nodes-with-highest-and-equal-saturation))

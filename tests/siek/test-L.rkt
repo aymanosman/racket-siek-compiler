@@ -50,7 +50,10 @@
                 stanza*
                 ...))
      (define body->code stanza*->code)
-     (define program->name (lambda (prog) (~a (C prog))))
+     (define program->name (lambda (prog)
+                             (get-output-string (let ([port (open-output-string)])
+                                                  (write-C port prog)
+                                                  port))))
      (with-syntax ([interp interp-stx]
                    [prog `(program () ,(body->code (syntax->datum #'(stanza* ...))))])
        (with-syntax ([name (program->name (syntax->datum #'prog))])

@@ -61,7 +61,7 @@
   (test
    #:expect 39
    (start
-    (if (> 1 2)
+    (if (eq? 1 2)
         (goto then)
         (goto else)))
    (else

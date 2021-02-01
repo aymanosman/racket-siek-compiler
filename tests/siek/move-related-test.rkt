@@ -2,11 +2,21 @@
 
 (provide move-related-tests)
 
-(require rackunit)
+(require graph
+         rackunit
+         siek/move-related)
 
-(require graph)
+(module+ test
+  (require rackunit/text-ui)
+  (run-tests move-related-tests))
 
-(require siek/move-related)
+(define-check (check-edges g expected)
+  (define actual (length (get-edges g)))
+  (unless (equal? actual expected)
+    (with-check-info (['edges (get-edges g)]
+                      ['expected expected]
+                      ['actual actual])
+      (fail-check))))
 
 (define-test-suite move-related-tests
   (test-case "no move related variables"
@@ -24,9 +34,9 @@
         (addq (var y) (var z))
         (jmp conclusion)))
 
-    (define moves (move-related instr*))
+    (define moves (move-related '(u v w x y z) instr*))
 
-    (check-equal? (length (get-edges moves)) 0))
+    (check-edges moves 0))
 
   (test-case "some move related variables"
     (define instr*
@@ -44,6 +54,6 @@
         (movq (var t.2) (reg rax))
         (jmp conclusion)))
 
-    (define moves (move-related instr*))
+    (define moves (move-related '(v w x y z t.1 t.2) instr*))
 
-    (check-equal? (length (get-edges moves)) (* 5 2))))
+    (check-edges moves (* 5 2))))

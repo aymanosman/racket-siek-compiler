@@ -5,10 +5,10 @@
 (require rackunit
          siek/color-graph
          siek/live-afters
-         siek/build-interference
-         siek/assign-homes
+         siek/make-conflicts
+         siek/assign-homes-x86
          siek/move-related
-         (submod siek/patch-instructions-R1 for-test))
+         (submod siek/patch-instructions for-test))
 
 (module+ test
   (require rackunit/text-ui)
@@ -42,12 +42,17 @@
         (addq (var t) (reg rax))
         (jmp conclusion)))
 
-    (define live* (live-afters instr*))
-    (define conflict (build-interference live* instr*))
-    (define moves (move-related instr*))
+    (define live* (live-afters-instr* empty instr*))
+    (define locals '(v w x y z t))
+    (define conflict (make-conflicts locals live* instr*))
+    (define moves (move-related locals instr*))
     (define (process moves order)
-      (define coloring (color-graph conflict moves #:order-for-test order))
-      (append-map patch-instructions-instr (assign-homes (colors->homes coloring) instr*)))
+      (define coloring
+        (color-graph conflict
+                     locals
+                     moves
+                     #:order-for-test order))
+      (append-map patch-instructions-instr (assign-homes-x86 (colors->homes coloring) instr*)))
 
     (check-optimized instr*
                      (process moves #f)

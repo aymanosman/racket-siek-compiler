@@ -2,28 +2,56 @@
 
 (provide color-graph-tests)
 
-(require rackunit)
-
-(require graph)
-
-(require siek/color-graph
+(require graph
+         rackunit
+         siek/x86
+         siek/options
+         siek/color-graph
          siek/live-afters
-         siek/move-related
-         siek/build-interference)
-
-(define-check (check-valid-coloring conflict coloring)
-  (define g (graph-copy conflict))
-  ;; FIXME (for ([r registers]) remove)
-  (remove-vertex! g 'rax)
-  (remove-vertex! g 'rsp)
-  (with-check-info (['coloring (unquoted-printing-string (graphviz g #:colors coloring))])
-    (check-true (valid-coloring? g coloring))))
+         siek/make-conflicts
+         siek/move-related)
 
 (module+ test
   (require rackunit/text-ui)
   (run-tests color-graph-tests))
 
+(define-check (check-valid-coloring conflict coloring)
+  (define g (graph-copy conflict))
+  (remove-vertex! g 'rax)
+  (remove-vertex! g 'rsp)
+  (with-check-info (['coloring (unquoted-printing-string (graphviz g #:colors coloring))])
+    (check-true (valid-coloring? g coloring))))
+
+(define-check (check-num-colors coloring expected)
+  (define copy (hash-copy coloring))
+  (for ([k (in-list (hash-keys copy))])
+    (when (register? k)
+      (hash-remove! copy k)))
+  (define actual (length (remove-duplicates (dict-values copy))))
+  (unless (equal? actual expected)
+    (with-check-info (['coloring coloring]
+                      ['copy copy]
+                      ['actual actual]
+                      ['expected expected])
+      (fail-check))))
+
 (define-test-suite color-graph-tests
+  (test-case "(read)"
+    (define instr*
+      '((movq (int 41) (var v))
+        (callq read_int)
+        (addq (var v) (reg rax))
+        (jmp conclusion)))
+
+    (define live* (live-afters-instr* empty instr*))
+    (define conflict (make-conflicts '(v) live* instr*))
+    (define coloring
+      (parameterize ([compiler-enable-move-biasing? #f])
+        (color-graph conflict '(v))))
+
+    (check-valid-coloring conflict coloring)
+    (check-num-colors coloring 1))
+
   (test-case "fully conflicted"
     (define instr*
       '((movq (int 1) (var u))
@@ -40,39 +68,15 @@
         (movq (var z) (reg rax))
         (jmp conclusion)))
 
-    (define live* (live-afters instr*))
-    (define conflict (build-interference live* instr*))
-    (define coloring (color-graph conflict (move-related instr*)))
-    (define num-colors (length (remove-duplicates (dict-values coloring))))
+    (define live* (live-afters-instr* empty instr*))
+    (define locals '(u v w x y z))
+    (define conflict (make-conflicts locals live* instr*))
+    (define coloring (color-graph conflict locals (move-related locals instr*)))
 
     (check-valid-coloring conflict coloring)
-    (check-equal? num-colors 8))
+    (check-num-colors coloring 6))
 
   (test-case "running example"
-    (define instr*
-      '((movq (int 1) (var v))
-        (movq (int 46) (var w))
-        (movq (var v) (var x))
-        (addq (int 7) (var x))
-        (movq (var x) (var y))
-        (movq (var x) (var z))
-        (addq (var w) (var z))
-        (movq (var y) (var t.1))
-        (negq (var t.1))
-        (movq (var z) (var t.2))
-        (addq (var t.1) (var t.2))
-        (movq (var t.2) (reg rax))
-        (jmp conclusion)))
-
-    (define live* (live-afters instr*))
-    (define conflict (build-interference live* instr*))
-    (define coloring (color-graph conflict (move-related instr*)))
-    (define num-colors (length (remove-duplicates (dict-values coloring))))
-
-    (check-valid-coloring conflict coloring)
-    (check-equal? num-colors 5))
-
-  (test-case "other running example"
     (define instr*
       '((movq (int 1) (var v))
         (movq (int 42) (var w))
@@ -87,11 +91,10 @@
         (addq (var t) (reg rax))
         (jmp conclusion)))
 
-
-    (define live* (live-afters instr*))
-    (define conflict (build-interference live* instr*))
-    (define coloring (color-graph conflict (move-related instr*)))
-    (define num-colors (length (remove-duplicates (dict-values coloring))))
+    (define live* (live-afters-instr* empty instr*))
+    (define locals '(v w x y z t))
+    (define conflict (make-conflicts locals live* instr*))
+    (define coloring (color-graph conflict locals (move-related locals instr*)))
 
     (check-valid-coloring conflict coloring)
-    (check-equal? num-colors 5)))
+    (check-num-colors coloring 3)))

@@ -1,78 +1,94 @@
 #lang racket
 
-(provide live-afters)
+(provide live-afters
+         live-afters-instr*
+         label->live)
 
-(require "instr.rkt")
+(require graph
+         (only-in "match-instr.rkt" arg)
+         "block.rkt"
+         "raise-mismatch-error.rkt")
 
-(define live-afters
+(define (live-afters code)
+  (define live-env (make-hash))
+  (for ([l (rest (reverse-toplogical-order code))]) ;; skip conclusion
+    (define live-set
+      (live-afters-instr* live-env (block-instr* (dict-ref code l))))
+    (hash-set! live-env l live-set))
+  (for/hash ([(k v) (in-hash live-env)])
+    (values k (rest v))))
+
+(define (reverse-toplogical-order code)
+  (tsort
+   (transpose
+    (directed-graph
+     (append*
+      (for/lists (_) ([c code])
+        (match-define (cons label `(block ,_ ,instr* ...)) c)
+        (instr*->edges label instr*)))))))
+
+(define (instr->label i)
+  (match i
+    [`(jmp ,l) l]
+    [`(je ,l) l]
+    [`(jl ,l) l]
+    [_ #f]))
+
+(define (instr*->edges label instr*)
+  (for/list ([l (stream-filter identity
+                               (for/stream ([i instr*]) (instr->label i)))])
+    (list label l)))
+
+(define live-afters-instr*
   (case-lambda
-   [(instr*)
-    (rest (live-afters (list (set)) (reverse instr*)))]
+   [(live-env instr*)
+    (live-afters-instr* (list (set)) live-env (reverse instr*))]
    ;; L(k) = L(k+1) - W(k) + R(k)
-   [(acc i*)
+   [(acc live-env i*)
     (match i*
       ['() acc]
       [(cons i i*)
        (define next
-         (set-union (set-subtract (first acc) (instr->writes i)) (instr->reads i)))
-       (live-afters (cons next acc) i*)])]))
+         (set-union (set-subtract (first acc) (instr->writes live-env i))
+                    (instr->reads live-env i)))
+       (live-afters-instr* (cons next acc) live-env i*)])]))
 
-(module+ test
-  (require rackunit)
+(define-match-expander instr
+  (lambda (stx)
+    (syntax-case stx ()
+      [(_ op p q)
+       #'(list op p q)])))
 
-  (check-equal?
-   (live-afters (list (set))
-                '((jmp conclusion)))
-   (list (set 'rax 'rsp)
-         (set)))
+;; (: instr->reads (-> Env Any (Setof Symbol)))
+(define (instr->reads env i)
+  (match i
+    [`(negq ,(arg a)) (set a)]
+    [(instr (or 'addq 'cmpq) (arg a0) (arg a1)) (set a0 a1)]
+    [(instr (or 'addq 'cmpq) _ (arg a)) (set a)]
+    [`(movq ,(arg a) ,_) (set a)]
+    [`(movq ,_ ,_) (set)]
+    [`(jmp ,l) (label->live env l)]
+    [`(je ,l) (label->live env l)]
+    [`(jl ,l) (label->live env l)]
+    [`(callq ,l) (set)]
+    [_ (raise-mismatch-error 'instr->reads 'instr i)]))
 
-  (check-equal?
-   (live-afters (list (set 'w 'y 'z))
-                '((movq (var x) (var z))))
-   (list (set 'w 'x 'y)
-         (set 'w 'y 'z)))
+;; (: instr->writes (-> Env Any (Setof Symbol)))
+(define (instr->writes env i)
+  (match i
+    [`(negq ,(arg a)) (set a)]
+    [`(addq ,_ ,(arg a)) (set a)]
+    [`(movq ,_ ,(arg a)) (set a)]
+    [`(cmpq ,_ ,_) (set)] ;; TODO
+    [`(jmp ,_) (set)]
+    [`(je ,_) (set)]
+    [`(jl ,_) (set)]
+    [`(callq ,_) (set)]
+    [_ (raise-mismatch-error 'instr->writes 'instr i)]))
 
-  (check-equal?
-   (live-afters (list (set 't.1))
-                '((addq (var t.2) (var t.1))))
-   (list (set 't.1 't.2)
-         (set 't.1)))
-
-  (check-equal?
-   (live-afters (list (set 't.1))
-                '((negq (var t.1))))
-   (list (set 't.1)
-         (set 't.1)))
-
-  (check-equal?
-   (live-afters (list (set 't.1))
-                '((movq (var t.2) (var t.1))))
-   (list (set 't.2)
-         (set 't.1)))
-
-  (check-equal?
-   (live-afters
-    '((movq (int 1) (var v))
-      (movq (int 42) (var w))
-      (movq (var v) (var x))
-      (addq (int 7) (var x))
-      (movq (var x) (var y))
-      (movq (var x) (var z))
-      (addq (var w) (var z))
-      (movq (var y) (var t))
-      (negq (var t))
-      (movq (var z) (reg rax))
-      (addq (var t) (reg rax))
-      (jmp conclusion)))
-   (list (set 'v 'rsp)
-         (set 'v 'w 'rsp)
-         (set 'w 'x 'rsp)
-         (set 'w 'x 'rsp)
-         (set 'w 'x 'y 'rsp)
-         (set 'w 'y 'z 'rsp)
-         (set 'z 'y 'rsp)
-         (set 't 'z 'rsp)
-         (set 't 'z 'rsp)
-         (set 'rax 't 'rsp)
-         (set 'rax 'rsp)
-         (set))))
+;; (: label->live (-> Env Symbol (Setof Symbol)))
+(define (label->live env l)
+  (match l
+    ['conclusion (set 'rax 'rsp)]
+    [_
+     (first (dict-ref env l))]))

@@ -6,6 +6,10 @@
          siek
          "test-x86.rkt")
 
+(module+ test
+  (require rackunit/text-ui)
+  (run-tests interp-x861-tests))
+
 (define-test-suite interp-x861-tests
   (test-x861
    "(return (not #f))"
@@ -71,6 +75,7 @@
     (addq (int 52) (deref rsp -8))
     (movq (deref rsp -8) (reg rax))
     (jmp conclusion)))
+
   (test-x861
    "(assign x (read)) (return (+ 1 x))"
    #:input
@@ -80,6 +85,27 @@
     (callq read_int)
     (addq (int 1) (reg rax))
     (jmp conclusion)))
+
+  (test-x861
+   "start:
+       if (< 1 2):
+         goto then
+         goto else
+    then:
+      return 33"
+   33
+   (start
+    (movq (int 1) (reg rcx))
+    (cmpq (int 2) (reg rcx))
+    (jl then)
+    (jmp else))
+   (then
+    (movq (int 33) (reg rax))
+    (jmp conclusion))
+   (else
+    (movq (int 98) (reg rax))
+    (jmp conclusion)))
+
   (check-exn
    #rx"interp-x861: failed to match\n  kind: 'l-value\n  term: '\\(var x\\)"
    (thunk

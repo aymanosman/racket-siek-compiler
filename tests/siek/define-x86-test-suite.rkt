@@ -15,20 +15,20 @@
   (syntax-rules (<=)
     [(_ compile [e <= input])
      (test-case (format "~a" 'e)
-       (main-fun compile
-                 'e
-                 (cond
-                   [input
-                    (parameterize ([current-input-port (open-input-string input)])
-                      e)]
-                   [else e])
-                 input))]
+       (check-main compile
+                   'e
+                   (cond
+                     [input
+                      (parameterize ([current-input-port (open-input-string input)])
+                        e)]
+                     [else e])
+                   input))]
     [(_ compile e)
      (main compile [e <= #f])]))
 
 (define dir (make-temporary-file "siek-compiler-~a" 'directory))
 
-(define (main-fun compile expr expected [input #f])
+(define-check (check-main compile expr expected input)
   (parameterize ([current-directory dir])
     (define stst (make-temporary-file "stst-~a" #f (current-directory)))
     (define stst.s (path-add-extension stst #".s"))

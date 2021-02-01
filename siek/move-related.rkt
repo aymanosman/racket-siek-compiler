@@ -3,24 +3,22 @@
 (provide move-related)
 
 (require graph
-         "match-instr.rkt")
+         (only-in "match-instr.rkt" arg))
 
-(define (move-related i*)
-  (define g (undirected-graph '()))
+(define (move-related locals i*)
+  (define g (undirected-graph locals))
 
   (for ([i i*])
     (match i
-      [`(movq (var ,a0) (var ,a1))
-       (add-edge! g a0 a1)]
-      [`(,_ ,(arg a))
+      [(list 'movq `(var ,x0) `(var ,x1))
+       (when (not (equal? x0 x1))
+         (add-edge! g x0 x1))]
+      [(list (or 'movq 'addq 'cmpq) _ (arg a))
        (add-vertex! g a)]
-      [`(,op ,(arg a0) ,(arg a1))
-       (add-vertex! g a0)
-       (add-vertex! g a1)]
-      [`(jmp ,_)
-       ;; FIXME
-       (add-vertex! g 'rax)
-       (add-vertex! g 'rsp)]
-      [_ (void)]))
-
+      [(list (or 'negq) (arg a))
+       (add-vertex! g a)]
+      [(list (or 'jmp 'jl 'je) _)
+       (void)]
+      [`(callq ,_)
+       (void)]))
   g)

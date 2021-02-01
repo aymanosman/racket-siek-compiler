@@ -6,6 +6,10 @@
          siek
          "test-x86.rkt")
 
+(module+ test
+  (require rackunit/text-ui)
+  (run-tests interp-x860-tests))
+
 (define-test-suite interp-x860-tests
   (parameterize ([compiler-psuedo-x86? #t])
     (test-x860
