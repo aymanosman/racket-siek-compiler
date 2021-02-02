@@ -1,12 +1,12 @@
 #lang racket
 
 (provide live-afters
-         live-afters-instr*
-         label->live)
+         live-afters-instr*)
 
 (require graph
          (only-in "match-instr.rkt" arg)
          "block.rkt"
+         "liveness.rkt"
          "raise-mismatch-error.rkt")
 
 (define (live-afters code)
@@ -49,46 +49,6 @@
       ['() acc]
       [(cons i i*)
        (define next
-         (set-union (set-subtract (first acc) (instr->writes live-env i))
+         (set-union (set-subtract (first acc) (instr->writes i))
                     (instr->reads live-env i)))
        (live-afters-instr* (cons next acc) live-env i*)])]))
-
-(define-match-expander instr
-  (lambda (stx)
-    (syntax-case stx ()
-      [(_ op p q)
-       #'(list op p q)])))
-
-;; (: instr->reads (-> Env Any (Setof Symbol)))
-(define (instr->reads env i)
-  (match i
-    [`(negq ,(arg a)) (set a)]
-    [(instr (or 'addq 'cmpq) (arg a0) (arg a1)) (set a0 a1)]
-    [(instr (or 'addq 'cmpq) _ (arg a)) (set a)]
-    [`(movq ,(arg a) ,_) (set a)]
-    [`(movq ,_ ,_) (set)]
-    [`(jmp ,l) (label->live env l)]
-    [`(je ,l) (label->live env l)]
-    [`(jl ,l) (label->live env l)]
-    [`(callq ,l) (set)]
-    [_ (raise-mismatch-error 'instr->reads 'instr i)]))
-
-;; (: instr->writes (-> Env Any (Setof Symbol)))
-(define (instr->writes env i)
-  (match i
-    [`(negq ,(arg a)) (set a)]
-    [`(addq ,_ ,(arg a)) (set a)]
-    [`(movq ,_ ,(arg a)) (set a)]
-    [`(cmpq ,_ ,_) (set)] ;; TODO
-    [`(jmp ,_) (set)]
-    [`(je ,_) (set)]
-    [`(jl ,_) (set)]
-    [`(callq ,_) (set)]
-    [_ (raise-mismatch-error 'instr->writes 'instr i)]))
-
-;; (: label->live (-> Env Symbol (Setof Symbol)))
-(define (label->live env l)
-  (match l
-    ['conclusion (set 'rax 'rsp)]
-    [_
-     (first (dict-ref env l))]))

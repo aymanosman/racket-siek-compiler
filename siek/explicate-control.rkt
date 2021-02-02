@@ -112,6 +112,7 @@
       (match e0
         [#t (list (cons label g0))]
         [#f (list (cons label g1))]
+        ;; FIXME eq?
         [`(not ,a)
          (explicate-pred label a g1 g0)]
         [(or (? atom?) (? prim?))
@@ -139,6 +140,7 @@
     (define/override (prim? e)
       (match e
         [(or `(eq? ,a* ...)
+             `(not ,a* ...)
              `(< ,a* ...))
          #:when (andmap (lambda (a) (atom? a)) a*)
          #t]

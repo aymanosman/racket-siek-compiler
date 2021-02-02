@@ -100,7 +100,7 @@
         [(? symbol? x)
          (dict-ref env x)]
         [`(let ([,x ,e0]) ,e1)
-         ((typecheck-exp (dict-set env x (expect-type env e0 'Integer)))
+         ((typecheck-exp (dict-set env x ((typecheck-exp env) e0)))
           e1)]
         [_
          ((super typecheck-exp env) e)]))))

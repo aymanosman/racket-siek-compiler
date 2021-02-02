@@ -4,12 +4,14 @@
          normalize-R2)
 
 (require (for-syntax "catamorphism.rkt")
-         "gensym.rkt"
          "options.rkt"
          "raise-mismatch-error.rkt")
 
 (define (normalize-R1 p)
   (send (new normalize-R1%) normalize p))
+
+(define (normalize-R2 p)
+  (send (new normalize-R2%) normalize p))
 
 (define normalize-R1%
   (class object%
@@ -43,7 +45,8 @@
         [(prim '+ (x0 env0) (x1 env1))
          (values `(+ ,x0 ,x1) (append env0 env1))]
         ;; R1
-        [(? symbol?) e]
+        [(? symbol?)
+         (values e empty)]
         [`(let ([,x ,e0]) ,e1)
          (let-values ([(e0 env0) (normalize-exp e0)]
                       [(e1 env1) (normalize-exp e1)])
@@ -71,26 +74,9 @@
         ;; R1
         [(? symbol?)
          (values e empty)]
-        [`(let ([,x ,e0]) ,e1)
-         (define-values (v1 env1) (normalize-arg e1))
-         (values v1 (append `((,x . ,(normalize-exp e0)))
-                            env1))]
+        ;; FIXME Why do we not need `let'?
         [_
          (raise-mismatch-error (who) 'arg e)]))))
-
-(define (extend-env env x e)
-  (values x (append env `((,x . ,e)))))
-
-(define (unfold-env env e)
-  (cond
-    [(empty? env) e]
-    [else
-     (match-define (cons x0 e0) (first env))
-     `(let ([,x0 ,e0])
-        ,(unfold-env (rest env) e))]))
-
-(define (normalize-R2 p)
-  (send (new normalize-R2%) normalize p))
 
 (define normalize-R2%
   (class normalize-R1%
@@ -146,3 +132,14 @@
          (extend-env (append env0 env1) (fresh) `(if ,p ,x0 ,x1))]
         [_
          (super normalize-arg e)]))))
+
+(define (extend-env env x e)
+  (values x (append env `((,x . ,e)))))
+
+(define (unfold-env env e)
+  (cond
+    [(empty? env) e]
+    [else
+     (match-define (cons x0 e0) (first env))
+     `(let ([,x0 ,e0])
+        ,(unfold-env (rest env) e))]))

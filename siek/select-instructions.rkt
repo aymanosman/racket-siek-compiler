@@ -3,8 +3,7 @@
 (provide select-instructions-R1
          select-instructions-R2)
 
-(require "options.rkt"
-         "raise-mismatch-error.rkt")
+(require "raise-mismatch-error.rkt")
 
 (define (select-instructions-R1 p)
   (send (new select-instructions-R1%) select p))
@@ -68,30 +67,30 @@
         [(2)
          (case op
            [(+) 'addq]
-           [(-) 'subq]
            [else `(unknown ,op)])]))
 
     (define/public (select-assign e v)
-      (define r (var->destination v))
+      (define d (var->destination v))
       (match e
         [(? arg?)
-         (list `(movq ,(select-arg e) ,r))]
+         (list `(movq ,(select-arg e) ,d))]
         [`(read)
          (cons `(callq read_int)
                (cond
-                 [(equal? '(reg rax) r)
+                 [(equal? '(reg rax) d)
                   empty]
                  [else
-                  (list `(movq (reg rax) ,r))]))]
+                  (list `(movq (reg rax) ,d))]))]
         [(prim op a)
-         (list `(movq ,(select-arg a) ,r)
-               `(,op ,r))]
+         (list `(movq ,(select-arg a) ,d)
+               `(,op ,d))]
         [(or (prim op (== v) a)
              (prim op a (== v)))
-         (list `(,op ,(select-arg a) ,r))]
+         (list `(,op ,(select-arg a) ,d))]
+
         [(prim op a0 a1)
-         (list `(movq ,(select-arg a0) ,r)
-               `(,op ,(select-arg a1) ,r))]))
+         (list `(movq ,(select-arg a0) ,d)
+               `(,op ,(select-arg a1) ,d))]))
 
     (define/public (arg? a)
       (match a
@@ -143,17 +142,21 @@
         [(eq?) 'je]))
 
     (define/override (select-assign e v)
-      (define r (var->destination v))
+      (define d (var->destination v))
       (match e
         [`(not ,a)
-         (list `(movq ,(select-arg a) ,r)
-               `(xorq (int 1) ,r))]
-        ;; [`(eq? ,_ ,_)] ;; TODO
+         (list `(movq ,(select-arg a) ,d)
+               `(xorq (int 1) ,d))]
+        [`(eq? ,a0 ,a1)
+         (list `(movq ,(select-arg a0) ,d)
+               `(cmpq ,(select-arg a1) ,d)
+               '(sete (bytereg al))
+               `(movzbq (bytereg al) ,d))]
         [`(< ,a0 ,a1)
-         (list `(movq ,(select-arg a0) ,r)
-               `(cmpq ,(select-arg a1) ,r)
+         (list `(movq ,(select-arg a0) ,d)
+               `(cmpq ,(select-arg a1) ,d)
                `(setl (bytereg al))
-               `(movzbq (bytereg al) ,r))]
+               `(movzbq (bytereg al) ,d))]
         [_
          (super select-assign e v)]))
 
@@ -162,17 +165,6 @@
         [#t '(int 1)]
         [#f '(int 0)]
         [_ (super select-arg a)]))
-
-    (define/public (select-tail-not a)
-      (match a
-        [(? symbol?)
-         (define d (var->destination a))
-         (list `(xorq (int 1) ,d)
-               `(cmpq (int 0) ,d))]
-        [_
-         (define t (fresh 'tmp))
-         (append (list `(movq ,(select-arg a) (var ,t)))
-                 (select-tail-not t))]))
 
     (define/public (select-tail-cmp a d)
       (match d

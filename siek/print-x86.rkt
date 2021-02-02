@@ -50,6 +50,8 @@
      (printf "$~a" n)]
     [`(reg ,r)
      (printf "%~a" r)]
+    [`(bytereg ,r)
+     (printf "%~a" r)]
     [`(deref ,r ,n)
      (printf "~a(%~a)" n r)]
     [_ (raise-mismatch-error 'print-x86-R1 'arg a)]))

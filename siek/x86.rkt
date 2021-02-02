@@ -22,6 +22,7 @@
          "block.rkt"
          "define-x86.rkt"
          "options.rkt"
+         (only-in "match-instr.rkt" setcc)
          "raise-mismatch-error.rkt")
 
 (define (register? r)
@@ -233,14 +234,13 @@
             (super interp-instr* code env (cons i i*))])]))
 
     (define/override (interp-instr env i)
-      (local-require (only-in "match-instr.rkt" set))
       (match i
         [`(xorq ,a0 ,a1)
          (interp-op env 'xorq (l-value a1) (r-value env a1) (r-value env a0))]
         [`(cmpq ,a0 ,a1)
          #:when (member (first a1) '(var reg deref bytereg))
          (interp-op env 'cmpq 'eflags (r-value env a1) (r-value env a0))]
-        [(set cc a)
+        [(setcc cc a)
          (dict-set env (l-value a) (interp-eflags env cc))]
         [`(movzbq ,a0 ,a1)
          (interp-instr env `(movq ,a0 ,a1))]

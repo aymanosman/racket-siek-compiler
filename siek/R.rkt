@@ -14,6 +14,21 @@
 (define (interp-R0 p)
   (send (new R0%) interp p))
 
+(define (interp-R0† p)
+  (send (new R0†%) interp p))
+
+(define (interp-R1 p)
+  (send (new R1%) interp p))
+
+(define (interp-R1† p)
+  (send (new R1†%) interp p))
+
+(define (interp-R2 p)
+  (send (new R2%) interp p))
+
+(define (interp-R2† p)
+  (send (new R2†%) interp p))
+
 (define R0%
   (class object%
     (super-new)
@@ -49,9 +64,6 @@
 ;; exp := a | (read)
 ;;      | (- a) | (+ a a)
 ;; atom := n
-
-(define (interp-R0† p)
-  (send (new R0†%) interp p))
 
 (define R0†%
   (class R0%
@@ -95,9 +107,6 @@
 ;; exp := ...
 ;;      | var | (let ([x e]) e)
 
-(define (interp-R1 p)
-  (send (new R1%) interp p))
-
 (define R1%
   (class R0%
     (super-new)
@@ -118,9 +127,6 @@
 ;; exp := ...
 ;;      | (let ([x e]) e)
 ;; atom := ... | x
-
-(define (interp-R1† p)
-  (send (new R1†%) interp p))
 
 (define R1†%
   (class R0†%
@@ -162,9 +168,6 @@
              (c e e) (if e e e))
    (cmp c := eq? < <= > >=)))
 
-(define (interp-R2 p)
-  (send (new R2%) interp p))
-
 (define R2%
   (class R1%
     (super-new)
@@ -202,28 +205,17 @@
       (member v '(eq? < <= > >= and or not - read +)))
 
     (define/public (operator-implementation)
-      (hash 'eq?
-            eq?
-            '<
-            <
-            '<=
-            <=
-            '>
-            >
-            '>=
-            >=
-            'and
-            and-fn
-            'or
-            or-fn
-            'not
-            not
-            '-
-            -
-            'read
-            read
-            '+
-            +))
+      (hash 'eq? eq?
+            '< <
+            '<= <=
+            '> >
+            '>= >=
+            'and and-fn
+            'or or-fn
+            'not not
+            '- -
+            'read read
+            '+ +))
 
     (define/public (interp-op op args)
       (apply (hash-ref (operator-implementation) op) args))))
@@ -243,9 +235,6 @@
    (exp e := ...
              (not a) (c a a) (if e e e))
    (atom a := ... b)))
-
-(define (interp-R2† p)
-  (send (new R2†%) interp p))
 
 (define R2†%
   (class R1†%

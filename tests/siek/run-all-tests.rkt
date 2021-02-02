@@ -35,7 +35,9 @@
              color-graph-tests
              live-afters-tests
              make-conflicts-tests
+             select-instructions-pass-tests
              select-instructions-tests
+             select-instructions-R2-tests
              uncover-locals-tests
              explicate-control-tests
              explicate-control-R2-tests
